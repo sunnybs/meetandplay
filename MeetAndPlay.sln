@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Admin", "MeetAn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Identity", "MeetAndPlay.Identity\MeetAndPlay.Identity.csproj", "{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Offers.Data", "MeetAndPlay.Offers.Data\MeetAndPlay.Offers.Data.csproj", "{EC16C50C-2C04-4783-A693-11212608E64C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Games.Data", "MeetAndPlay.Games.Data\MeetAndPlay.Games.Data.csproj", "{779A8EDB-39BA-45FF-9D14-231611D5BE2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,5 +24,13 @@ Global
 		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC16C50C-2C04-4783-A693-11212608E64C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC16C50C-2C04-4783-A693-11212608E64C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC16C50C-2C04-4783-A693-11212608E64C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC16C50C-2C04-4783-A693-11212608E64C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{779A8EDB-39BA-45FF-9D14-231611D5BE2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{779A8EDB-39BA-45FF-9D14-231611D5BE2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{779A8EDB-39BA-45FF-9D14-231611D5BE2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{779A8EDB-39BA-45FF-9D14-231611D5BE2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
