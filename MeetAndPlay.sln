@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Offers", "MeetAndPlay.Offers\MeetAndPlay.Offers.csproj", "{CA184F29-0AAF-4B43-AF30-EB82CA5505D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Admin", "MeetAndPlay.Admin\MeetAndPlay.Admin.csproj", "{4D9D6AA7-2B87-4F35-BA62-CB4F9BAB8936}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Identity", "MeetAndPlay.Identity\MeetAndPlay.Identity.csproj", "{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D9D6AA7-2B87-4F35-BA62-CB4F9BAB8936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D9D6AA7-2B87-4F35-BA62-CB4F9BAB8936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D9D6AA7-2B87-4F35-BA62-CB4F9BAB8936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D9D6AA7-2B87-4F35-BA62-CB4F9BAB8936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE7FC81-09C6-4D5C-80FE-0A67AF313DDE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
