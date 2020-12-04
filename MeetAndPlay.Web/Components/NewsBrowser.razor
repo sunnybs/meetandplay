@@ -1,0 +1,21 @@
+@inherits NewsBrowserComponent
+
+
+<div class="my-4">
+    @foreach (var group in GetLastNewsGroups())
+    {
+        <div class="row">
+            @foreach (var news in group)
+            {
+                <div class="card col-sm my-4 border-0">
+                  <img class="card-img-top rounded" style="max-height: 300px; object-fit: cover;" src="@news.Poster" alt="Постер новости">
+                  <div class="card-body">
+                      <h5 class="card-title"><b>@news.Title</b></h5>
+                    <p class="card-text">@news.ShortDescription</p>
+                    <p class="card-text"><small class="text-muted">@news.Date.ToString("dd MMMM yyyy")</small></p>
+                  </div>
+                </div>
+            }
+        </div>
+    }
+</div>

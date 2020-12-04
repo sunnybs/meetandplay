@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\images" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MeetAndPlay.Games.Data\MeetAndPlay.Games.Data.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Offers.Data\MeetAndPlay.Offers.Data.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Places.Data\MeetAndPlay.Places.Data.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Users.Data\MeetAndPlay.Users.Data.csproj" />
+    </ItemGroup>
+
+</Project>

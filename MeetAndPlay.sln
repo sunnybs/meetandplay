@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Places", "MeetA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Users", "MeetAndPlay.Users\MeetAndPlay.Users.csproj", "{3C14E564-6353-44D3-9E80-D17823EA9A87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Web", "MeetAndPlay.Web\MeetAndPlay.Web.csproj", "{88F4C858-499F-4CC8-A210-E3BCEBD397F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,5 +76,9 @@ Global
 		{3C14E564-6353-44D3-9E80-D17823EA9A87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C14E564-6353-44D3-9E80-D17823EA9A87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C14E564-6353-44D3-9E80-D17823EA9A87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88F4C858-499F-4CC8-A210-E3BCEBD397F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88F4C858-499F-4CC8-A210-E3BCEBD397F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88F4C858-499F-4CC8-A210-E3BCEBD397F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88F4C858-499F-4CC8-A210-E3BCEBD397F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

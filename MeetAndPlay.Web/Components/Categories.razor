@@ -1,0 +1,13 @@
+@inherits CategoriesComponent
+
+<div class="d-flex justify-content-center">
+    @foreach (var category in GetCategories())
+    {
+        <a class="my-4 mx-md-5" href="@category.Link">
+                <img src="@category.PosterUrl" style="width: 100px; height: 100px;" class="rounded-circle" alt="Постер категории"/>
+            <div class="text-center">
+                <p>@category.Name</p>
+            </div>
+        </a>
+    }
+</div>

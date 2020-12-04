@@ -1,0 +1,62 @@
+<div class="@_rowClasses">
+    <div class="@_firstRowClasses">
+        <div class="container">
+                <b>Бесплатная онлайн платформа, где ты можешь быстро и легко найти компанию, игру или место для игры в настолки :)</b>
+            </div>
+    </div>
+    
+</div>
+
+<div class="@_rowClasses">
+    <div class="@_infoWithColor">
+        <div class="container">
+            Не знаешь как провести этот вечер?
+        </div>
+
+    </div>
+    <div class="@_info">
+        <div class="container">
+            На нашем сайте всегда есть <b>актуальная информация</b> об предстоящих турнирах, а также популярных местах и играх
+        </div>
+    </div>
+</div>
+<div class="@_rowClasses">
+    <div class="@_info">
+        <div class="container">
+            На нашем сайте предоставлена информация о различных местах, где можно собраться <b>большой компанией</b> и поиграть
+        </div>
+    </div>
+    <div class="@_infoWithColor">
+        <div class="container">Есть компания, но нет места встречи?</div>
+    </div>
+</div>
+
+<div class="@_rowClasses">
+    <div class="@_infoWithColor">
+        <div class="container">У тебя мало опыта? Ты бы хотел сыграть с людьми твоего возраста?</div>
+
+    </div>
+    <div class="@_info">
+        <div class="container">На нашем сайте при поиске игрока или команды можно указать <b>необходимые</b> для тебя критерии</div>
+
+    </div>
+</div>
+
+<div class="@_rowClasses">
+    <div class="@_info">
+        <div class="container">
+            На нашем сайте ты можешь <b>создать заявку</b>, по которой другие пользователи тебя найдут и предложат участие.
+        </div>
+    </div>
+    <div class="@_infoWithColor">
+        <div class="container">Все твои друзья заняты, а писать никому не хочется?</div>
+    </div>
+</div>
+
+@code{
+    private static string _firstRowClasses ="col-md p-4 my-4 bg-lightblue rounded text-center jumbotron d-flex align-items-center";
+    private static string _rowClasses = "row";
+    private static string _infoBase = "col-md p-3 m-2 rounded text-center jumbotron d-flex align-items-center";
+    private static string _info = _infoBase + " bg-white";
+    private static string _infoWithColor = _infoBase + " bg-lightyellow";
+}
