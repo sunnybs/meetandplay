@@ -10,6 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\MeetAndPlay.Core\MeetAndPlay.Core.csproj" />
       <ProjectReference Include="..\MeetAndPlay.Data\MeetAndPlay.Data.csproj" />
       <ProjectReference Include="..\MeetAndPlay.Games.Data\MeetAndPlay.Games.Data.csproj" />
       <ProjectReference Include="..\MeetAndPlay.Offers.Data\MeetAndPlay.Offers.Data.csproj" />

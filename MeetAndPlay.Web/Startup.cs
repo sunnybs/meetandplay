@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MeetAndPlay.Web.Data;
+using MeetAndPlay.Web.Services;
 
 namespace MeetAndPlay.Web
 {
@@ -27,8 +27,11 @@ namespace MeetAndPlay.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+
+            services.AddHttpContextAccessor();
+            
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddScoped<JSHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

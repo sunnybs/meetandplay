@@ -1,6 +1,20 @@
-@page "/Category/{name}"
-<h3>Category</h3>
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@inherits CategoryComponent
+@page "/category/{offerTypeName}"
 
-@code {
-    
-}
+<div class="d-flex">
+    <div class="mr-auto">
+        <img class="mx-auto" style="max-width: 50px;" src="@CurrentCategory.PosterUrl" alt="">
+        <h3>@CurrentCategory.Name</h3>
+    </div>
+    @foreach (var category in OtherCategories)
+    {
+        <a class="mx-2" href="@category.Link">
+            <img class="mx-auto" style="max-width: 30px;" src="@category.PosterUrl" alt="">
+            <b>@category.Name</b>
+        </a>
+    }
+</div>
+
+<Search Placeholder="Во что вы хотите поиграть?"></Search>
+<Filter OfferTypeName="@OfferTypeName"/>

@@ -18,6 +18,6 @@ namespace MeetAndPlay.Data.Models.Offers
         public bool IsActive { get; set; }
         public Guid PlaceTypeId { get; set; }
         public ICollection<LobbyGame> LobbyGames { get; set; }
-        public ICollection<LobbyGame> LobbyImages { get; set; }
+        public ICollection<LobbyImage> LobbyImages { get; set; }
     }
 }

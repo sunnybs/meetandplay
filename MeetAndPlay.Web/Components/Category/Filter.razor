@@ -1,0 +1,20 @@
+@inherits FilterComponent
+@code{
+        private const string FilterClasses = "p-3 mx-4 btn btn-warning bg-lightyellow border-0 rounded-pill";
+}
+<div class="my-4">
+    <div class="d-flex">
+        <div @ref="DateFilter" class="@FilterClasses">
+            Дата
+        </div>
+        <div @ref="GameFilter" class="@FilterClasses">
+            Игра
+        </div>
+        <div @ref="PeopleFilter" class="@FilterClasses">
+            Люди        
+        </div>
+        <div @ref="PlaceFilter" class="@FilterClasses">
+            Место
+        </div>
+    </div>
+</div>
