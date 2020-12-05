@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MeetAndPlay.Offers.Data.DTO;
+using MeetAndPlay.Data.DTO;
 using Microsoft.AspNetCore.Components;
 
 namespace MeetAndPlay.Web.Components
