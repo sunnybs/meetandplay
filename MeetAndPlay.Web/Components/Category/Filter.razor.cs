@@ -3,37 +3,54 @@ using System.Threading.Tasks;
 using MeetAndPlay.Data.Enums;
 using MeetAndPlay.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace MeetAndPlay.Web.Components.Category
 {
     public class FilterComponent : ComponentBase
     {
         [Parameter] public string OfferTypeName { get; set; }
-        [Inject] private JSHelper JSHelper { get; set; }
-        protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
+        private OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
 
         protected ElementReference DateFilter;
         protected ElementReference GameFilter;
         protected ElementReference PlaceFilter;
         protected ElementReference PeopleFilter;
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private const string DefaultClasses = "p-3 mx-4 btn btn-warning bg-lightyellow border-0 rounded-pill";
+        protected string DateFilterClasses;
+        protected string GameFilterClasses;
+        protected string PlaceFilterClasses;
+        protected string PeopleFilterClasses;
+
+        protected override void OnInitialized()
         {
+            SetDefaultClasses();
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            SetDefaultClasses();
             switch (OfferType)
             {
-                case OfferType.Event:
-                {
-                    await JSHelper.AddClassAsync(GameFilter, "d-none");
-                    await JSHelper.AddClassAsync(PlaceFilter, "d-none");
-                    await JSHelper.AddClassAsync(PeopleFilter, "d-none");
-                    break;
-                }
                 case OfferType.Place:
-                {
-                    await JSHelper.AddClassAsync(PeopleFilter, "d-none");
+                    PeopleFilterClasses += " d-none";
                     break;
-                }
+                case OfferType.Event:
+                    GameFilterClasses += " d-none";
+                    PlaceFilterClasses += " d-none";
+                    PeopleFilterClasses += " d-none";
+                    break;
             }
+            return Task.CompletedTask;
+        }
+
+        private void SetDefaultClasses()
+        {
+            DateFilterClasses = DefaultClasses;
+            GameFilterClasses = DefaultClasses;
+            PlaceFilterClasses = DefaultClasses;
+            PeopleFilterClasses = DefaultClasses;
         }
     }
 }

@@ -3,7 +3,7 @@ using MeetAndPlay.Data.Enums;
 
 namespace MeetAndPlay.Web.ViewModels
 {
-    public class CategoryViewModelsStorage
+    public static class CategoryViewModelsStorage
     {
         public static IEnumerable<CategoryViewModel> GetCategories()
         {

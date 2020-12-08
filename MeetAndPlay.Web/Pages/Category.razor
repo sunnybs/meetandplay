@@ -3,14 +3,18 @@
 @page "/category/{offerTypeName}"
 
 <div class="d-flex">
-    <div class="mr-auto">
-        <img class="mx-auto" style="max-width: 50px;" src="@CurrentCategory.PosterUrl" alt="">
+    <div class="mr-auto text-center">
+        <div>
+            <img class="mx-auto" style="max-width: 50px;" src="@CurrentCategory.PosterUrl" alt="">
+        </div>
         <h3>@CurrentCategory.Name</h3>
     </div>
     @foreach (var category in OtherCategories)
     {
-        <a class="mx-2" href="@category.Link">
-            <img class="mx-auto" style="max-width: 30px;" src="@category.PosterUrl" alt="">
+        <a class="mx-3 mt-2 text-center" href="@category.Link">
+            <div>
+                <img class="mx-auto" style="max-width: 30px;" src="@category.PosterUrl" alt="">
+            </div>
             <b>@category.Name</b>
         </a>
     }

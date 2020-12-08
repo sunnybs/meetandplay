@@ -1,19 +1,23 @@
 @inherits FilterComponent
 @code{
-        private const string FilterClasses = "p-3 mx-4 btn btn-warning bg-lightyellow border-0 rounded-pill";
+
+    DateTime? value = null;
+
 }
+
+
 <div class="my-4">
     <div class="d-flex">
-        <div @ref="DateFilter" class="@FilterClasses">
-            Дата
+        <div @ref="DateFilter" class="@DateFilterClasses">
+            <RadzenDatePicker @bind-Value=@value DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
         </div>
-        <div @ref="GameFilter" class="@FilterClasses">
+        <div @ref="GameFilter" class="@GameFilterClasses">
             Игра
         </div>
-        <div @ref="PeopleFilter" class="@FilterClasses">
+        <div @ref="PeopleFilter" class="@PeopleFilterClasses">
             Люди        
         </div>
-        <div @ref="PlaceFilter" class="@FilterClasses">
+        <div @ref="PlaceFilter" class="@PlaceFilterClasses">
             Место
         </div>
     </div>

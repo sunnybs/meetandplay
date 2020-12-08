@@ -9,16 +9,16 @@ namespace MeetAndPlay.Web.Pages
 {
     public class CategoryComponent : ComponentBase
     {
-        [Parameter]
-        public string OfferTypeName { get; set; }
-
+        [Parameter] public string OfferTypeName { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
+        
         protected CategoryViewModel CurrentCategory { get; set; }
         protected CategoryViewModel[] OtherCategories { get; set; }
         protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
 
         
         //TODO: Разобраться со State объекта
-        protected override Task OnInitializedAsync()
+        protected override Task OnParametersSetAsync()
         {
             var categories = CategoryViewModelsStorage.GetCategories().ToArray();
             CurrentCategory = categories.Single(c => c.OfferType == OfferType);
