@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Data", "MeetAnd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Core", "MeetAndPlay.Core\MeetAndPlay.Core.csproj", "{E87B408F-F2F6-40FC-BCC6-FDA2634C0936}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetAndPlay.Core.Abstraction", "MeetAndPlay.Core.Abstraction\MeetAndPlay.Core.Abstraction.csproj", "{C3F762B1-3183-49AB-BBC7-6FFA6D63BE10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{E87B408F-F2F6-40FC-BCC6-FDA2634C0936}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E87B408F-F2F6-40FC-BCC6-FDA2634C0936}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E87B408F-F2F6-40FC-BCC6-FDA2634C0936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3F762B1-3183-49AB-BBC7-6FFA6D63BE10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3F762B1-3183-49AB-BBC7-6FFA6D63BE10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3F762B1-3183-49AB-BBC7-6FFA6D63BE10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3F762B1-3183-49AB-BBC7-6FFA6D63BE10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

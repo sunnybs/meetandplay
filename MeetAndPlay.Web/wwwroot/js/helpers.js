@@ -1,6 +1,9 @@
+$('.dropdown-menu option, .dropdown-menu select').click(function(e) {
+    e.stopPropagation();
+});
+
 function showModal(element){
-    const modal = new BSN.Modal(element);
-    modal.show();
+    $(element).modal("show");
 }
 
 function addClass(element, className) {

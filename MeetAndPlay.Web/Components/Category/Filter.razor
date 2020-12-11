@@ -1,24 +1,88 @@
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Core.Infrastructure.Extensions
 @inherits FilterComponent
-@code{
-
-    DateTime? value = null;
-
-}
-
 
 <div class="my-4">
     <div class="d-flex">
-        <div @ref="DateFilter" class="@DateFilterClasses">
-            <RadzenDatePicker @bind-Value=@value DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+        <div class="dropdown" id="dateDropdownWrapper">
+            <button @ref="DateFilter" class="@DateFilterClasses" type="button" id="dateDropdown"
+                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Дата
+            </button>
+            <div class="@DropdownMenuClasses" aria-labelledby="dateDropdown" style="width: 300px;">
+                <label class="small">
+                    <b>Дата, когда Вы хотите поиграть:</b>
+                </label>
+                <RadzenDatePicker @bind-Value=@FilterModel.From DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+            </div>
         </div>
-        <div @ref="GameFilter" class="@GameFilterClasses">
-            Игра
+
+        <div class="dropdown">
+            <button @ref="GameFilter" class="@GameFilterClasses" type="button" id="gameDropdown"
+                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Игра
+            </button>
+            <div class="@DropdownMenuClasses" aria-labelledby="gameDropdown" style="width: 300px;">
+                <div class="form-group">
+                    <label class="small">
+                        <b>Название игры:</b>
+                    </label>
+                    <input class="form-control" type="text" placeholder="Начните вводить название игры..." @bind=@FilterModel.GameName/>
+                </div>
+                <div class="form-group">
+                    <label class="small">
+                        <b>Уровень игры:</b>
+                    </label>
+                    <select class="form-control" @bind=@FilterModel.GameLevel>
+                        @foreach (GameLevel value in Enum.GetValues(typeof(GameLevel)))
+                        {
+                            <option value="@value">@value.GetDescription()</option>
+                        }
+                    </select>
+                </div>
+            </div>
         </div>
-        <div @ref="PeopleFilter" class="@PeopleFilterClasses">
-            Люди        
+
+        <div class="dropdown">
+            <button @ref="PeopleFilter" class="@PeopleFilterClasses" type="button" id="peopleDropdown"
+                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Люди
+            </button>
+            <div class="@DropdownMenuClasses" aria-labelledby="peopleDropdown" style="width: 300px;">
+                <label class="small">
+                    <b>Возраст</b>
+                </label>
+                <div class="d-flex">
+                    <div class="form-group mx-2">
+                        <label class="small">От</label>
+                        <input class="form-control" type="text" @bind="@FilterModel.AgeFrom"/>
+                    </div>
+                    <div class="form-group mx-2">
+                        <label class="small">До</label>
+                        <input class="form-control" type="text" @bind="@FilterModel.AgeTo"/>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div @ref="PlaceFilter" class="@PlaceFilterClasses">
-            Место
+
+        <div class="dropdown">
+            <button @ref="PlaceFilter" class="@PlaceFilterClasses" type="button" id="placeDropdown"
+                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Места
+            </button>
+            <div class="@DropdownMenuClasses" aria-labelledby="placeDropdown" style="width: 300px;">
+                <div class="form-group">
+                    <label class="small">
+                        <b>Где вы хотите поиграть:</b>
+                    </label>
+                    <select class="form-control" @bind="@FilterModel.PlaceType">
+                        @foreach (GameLevel value in Enum.GetValues(typeof(PlaceType)))
+                        {
+                            <option value="@value">@value.GetDescription()</option>
+                        }
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 </div>

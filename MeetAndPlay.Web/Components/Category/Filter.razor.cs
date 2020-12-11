@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using MeetAndPlay.Data.DTO.OfferAggregator;
 using MeetAndPlay.Data.Enums;
 using MeetAndPlay.Web.Services;
 using Microsoft.AspNetCore.Components;
@@ -17,12 +18,15 @@ namespace MeetAndPlay.Web.Components.Category
         protected ElementReference PlaceFilter;
         protected ElementReference PeopleFilter;
 
-        private const string DefaultClasses = "p-3 mx-4 btn btn-warning bg-lightyellow border-0 rounded-pill";
+        private const string DefaultClasses = "p-3 mx-4 btn btn-warning bg-lightyellow border-0 rounded-pill dropdown-toggle";
+        protected const string DropdownMenuClasses = "dropdown-menu p-4 shadow border-0";
+        
         protected string DateFilterClasses;
         protected string GameFilterClasses;
         protected string PlaceFilterClasses;
         protected string PeopleFilterClasses;
 
+        protected readonly OffersFilterDto FilterModel = new();
         protected override void OnInitialized()
         {
             SetDefaultClasses();

@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MeetAndPlay.Core.Abstraction\MeetAndPlay.Core.Abstraction.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Data\MeetAndPlay.Data.csproj" />
     </ItemGroup>
 
 </Project>

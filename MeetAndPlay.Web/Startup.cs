@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +34,7 @@ namespace MeetAndPlay.Web
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
+            services.AddScoped<IOfferAggregator, OfferAggregator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
