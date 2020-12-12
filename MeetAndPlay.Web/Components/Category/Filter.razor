@@ -1,5 +1,6 @@
 @using MeetAndPlay.Data.Enums
 @using MeetAndPlay.Core.Infrastructure.Extensions
+@using Microsoft.Extensions.Logging
 @inherits FilterComponent
 
 <div class="my-4">
@@ -13,7 +14,7 @@
                 <label class="small">
                     <b>Дата, когда Вы хотите поиграть:</b>
                 </label>
-                <RadzenDatePicker @bind-Value=@FilterModel.From DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+                <RadzenDatePicker @bind-Value=@RadzenDateTime DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
             </div>
         </div>
 

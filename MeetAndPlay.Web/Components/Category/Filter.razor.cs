@@ -26,7 +26,19 @@ namespace MeetAndPlay.Web.Components.Category
         protected string PlaceFilterClasses;
         protected string PeopleFilterClasses;
 
-        protected readonly OffersFilterDto FilterModel = new();
+        [CascadingParameter]
+        protected OffersFilterDto FilterModel { get; set; }
+
+        protected DateTime? RadzenDateTime
+        {
+            get => FilterModel.From;
+            set
+            {
+                FilterModel.From = value;
+                FilterModel.StateHasChanged();
+            }
+        }
+
         protected override void OnInitialized()
         {
             SetDefaultClasses();

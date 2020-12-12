@@ -19,6 +19,9 @@
         </a>
     }
 </div>
-
 <Search Placeholder="Во что вы хотите поиграть?"></Search>
-<Filter OfferTypeName="@OfferTypeName"/>
+<CascadingValue Value="FilterModel">
+    <Filter OfferTypeName="@OfferTypeName"/>
+    <Browser/>
+</CascadingValue>
+

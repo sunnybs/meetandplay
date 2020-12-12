@@ -1,9 +1,11 @@
 using System;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using MeetAndPlay.Data.Enums;
 
 namespace MeetAndPlay.Data.DTO.OfferAggregator
 {
-    public class OffersFilterDto
+    public class OffersFilterDto : PagingDto
     {
         public OfferType? OfferType { get; set; }
         public DateTime? From { get; set; }
@@ -13,5 +15,6 @@ namespace MeetAndPlay.Data.DTO.OfferAggregator
         public int? AgeFrom { get; set; }
         public int? AgeTo { get; set; }
         public PlaceType? PlaceType { get; set; }
+        [JsonIgnore] public Action StateHasChanged { get; set; }
     }
 }
