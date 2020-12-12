@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using IdentityServerAspNetIdentity.Models;
+using MeetAndPlay.Data.Enums;
 
 namespace IdentityServerHost.Quickstart.UI.Register
 {

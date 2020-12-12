@@ -1,15 +1,12 @@
 using System;
+using MeetAndPlay.Data.Enums;
+using MeetAndPlay.Data.Models.Commons;
 
 namespace MeetAndPlay.Data.Models.Offers
 {
-    public class UserOfferPeriod
+    public class UserOfferPeriod : PeriodBase
     {
-        public Guid UserOfferPeriodId { get; set; }
         public Guid UserOfferId { get; set; }
-        public bool IsEveryday { get; set; }
-        public bool IsDayOfWeek { get; set; }
-        public WeekDays Day { get; set; }
-        public int HoursFrom { get; set; }
-        public int HoursTo { get; set; }
+        public virtual UserOffer UserOffer { get; set; }
     }
 }

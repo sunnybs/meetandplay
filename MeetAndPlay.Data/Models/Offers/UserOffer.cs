@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using MeetAndPlay.Data.Models.Users;
 
 namespace MeetAndPlay.Data.Models.Offers
 {
     /// <summary>
     ///     Анкета конкретного игрока, ищущего возможность сыграть. Отображаются в поиске игроков.
     /// </summary>
-    public class UserOffer
+    public class UserOffer : BaseEntity
     {
-        public Guid UserOfferId { get; set; }
         public Guid AuthorId { get; set; }
+        public virtual User Author { get; set; }
         public string Description { get; set; }
         public DateTime CreationDate { get; set; }
         public bool IsConstantSearching { get; set; }

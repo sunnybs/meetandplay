@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using IdentityModel;
 using IdentityServerAspNetIdentity.Data;
-using IdentityServerAspNetIdentity.Models;
+using MeetAndPlay.Data.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +24,7 @@ namespace IdentityServerAspNetIdentity
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlite(connectionString));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -35,11 +35,11 @@ namespace IdentityServerAspNetIdentity
                     var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
                     context.Database.Migrate();
 
-                    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
                     var alice = userMgr.FindByNameAsync("alice").Result;
                     if (alice == null)
                     {
-                        alice = new ApplicationUser
+                        alice = new User
                         {
                             UserName = "alice",
                             Email = "AliceSmith@email.com",
@@ -71,7 +71,7 @@ namespace IdentityServerAspNetIdentity
                     var bob = userMgr.FindByNameAsync("bob").Result;
                     if (bob == null)
                     {
-                        bob = new ApplicationUser
+                        bob = new User
                         {
                             UserName = "bob",
                             Email = "BobSmith@email.com",

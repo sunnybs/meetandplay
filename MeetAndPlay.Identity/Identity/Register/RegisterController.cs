@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityModel;
-using IdentityServerAspNetIdentity.Models;
+using MeetAndPlay.Data.Models.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +12,9 @@ namespace IdentityServerHost.Quickstart.UI.Register
     [AllowAnonymous]
     public class RegisterController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<User> _userManager;
 
-        public RegisterController(UserManager<ApplicationUser> userManager)
+        public RegisterController(UserManager<User> userManager)
         {
             _userManager = userManager;
         }
@@ -39,7 +39,7 @@ namespace IdentityServerHost.Quickstart.UI.Register
                 return View("Index", registerModel);
             }
             
-            var newUser = new ApplicationUser
+            var newUser = new User
             {
                 Email = registerModel.Email,
                 EmailConfirmed = true,

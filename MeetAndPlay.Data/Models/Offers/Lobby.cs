@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using MeetAndPlay.Data.Enums;
 
 namespace MeetAndPlay.Data.Models.Offers
 {
     /// <summary>
     ///     Коммандное лобби для организации игры. Отображаются в поиске комманд.
     /// </summary>
-    public class Lobby
+    public class Lobby : BaseEntity
     {
-        public Guid LobbyId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime CreationDate { get; set; }
@@ -16,7 +16,7 @@ namespace MeetAndPlay.Data.Models.Offers
         public int MaxPlayersCount { get; set; }
         public int CurrentPlayersCount { get; set; }
         public bool IsActive { get; set; }
-        public Guid PlaceTypeId { get; set; }
+        public PlaceType PlaceType { get; set; }
         public ICollection<LobbyGame> LobbyGames { get; set; }
         public ICollection<LobbyImage> LobbyImages { get; set; }
     }

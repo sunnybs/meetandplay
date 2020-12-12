@@ -1,4 +1,4 @@
-namespace MeetAndPlay.Data.Models.Offers
+namespace MeetAndPlay.Data.Enums
 {
     public enum WeekDays
     {
