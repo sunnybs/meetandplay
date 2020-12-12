@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,12 @@ namespace MeetAndPlay.Core.Infrastructure.Extensions
     {
         public static IEnumerable<IEnumerable<T>> AsGroups<T>(this IEnumerable<T> enumerable, int groupCount)
         {
+            if (enumerable == null)
+                throw new ArgumentNullException(nameof(IEnumerable<T>));
+            
+            if (groupCount < 0)
+                throw new ArgumentException("Group count should be positive.");
+            
             var currentGroup = new List<T>();
             foreach (var item in enumerable)
             {
