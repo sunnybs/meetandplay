@@ -1,4 +1,4 @@
-namespace MeetAndPlay.Data.Models.Games
+namespace MeetAndPlay.Data.Enums
 {
     public enum RequestStatus
     {

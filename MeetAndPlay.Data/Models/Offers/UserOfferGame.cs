@@ -3,7 +3,7 @@ using MeetAndPlay.Data.Models.Games;
 
 namespace MeetAndPlay.Data.Models.Offers
 {
-    public class UserOfferGames
+    public class UserOfferGame
     {
         public Guid UserOfferId { get; set; }
         public virtual UserOffer UserOffer { get; set; }
