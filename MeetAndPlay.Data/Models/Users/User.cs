@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MeetAndPlay.Data.Enums;
 using MeetAndPlay.Data.Models.Offers;
 using Microsoft.AspNetCore.Identity;
 
 namespace MeetAndPlay.Data.Models.Users
 {
-    public class User : IdentityUser
+    public class User : IdentityUser<Guid>
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

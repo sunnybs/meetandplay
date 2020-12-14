@@ -5,7 +5,7 @@ using MeetAndPlay.Data.Models.Users;
 
 namespace MeetAndPlay.Data.Models.Offers
 {
-    public class LobbyJoiningRequests
+    public class LobbyJoiningRequest
     {
         public Guid LobbyId { get; set; }
         public virtual Lobby Lobby { get; set; }

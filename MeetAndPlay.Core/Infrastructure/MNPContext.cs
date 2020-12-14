@@ -17,7 +17,7 @@ namespace MeetAndPlay.Core.Infrastructure
         public DbSet<Lobby> Lobbies { get; set; }
         public DbSet<LobbyGame> LobbyGames { get; set; }
         public DbSet<LobbyImage> LobbyImages { get; set; }
-        public DbSet<LobbyJoiningRequests> LobbyJoiningRequests { get; set; }
+        public DbSet<LobbyJoiningRequest> LobbyJoiningRequests { get; set; }
         public DbSet<LobbyPlayer> LobbyPlayers { get; set; }
         public DbSet<UserOffer> UserOffers { get; set; }
         public DbSet<UserOfferGame> UserOfferGames { get; set; }
@@ -51,7 +51,7 @@ namespace MeetAndPlay.Core.Infrastructure
             modelBuilder.Entity<LobbyImage>()
                 .HasKey(key => new {key.FileId, key.LobbyId});
             
-            modelBuilder.Entity<LobbyJoiningRequests>()
+            modelBuilder.Entity<LobbyJoiningRequest>()
                 .HasKey(key => new {key.UserId, key.LobbyId});
             
             modelBuilder.Entity<LobbyPlayer>()

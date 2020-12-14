@@ -22,6 +22,7 @@ namespace MeetAndPlay.Data.Models.Offers
         public DateTime ActualOfferDate { get; set; }
 
         public ICollection<UserOfferPeriod> Periods { get; set; }
+        public ICollection<UserOfferGame> UserOfferGames { get; set; }
         public bool IsActive { get; set; }
     }
 }

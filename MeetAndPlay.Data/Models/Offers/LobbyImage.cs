@@ -9,5 +9,6 @@ namespace MeetAndPlay.Data.Models.Offers
         public virtual Lobby Lobby { get; set; }
         public Guid FileId { get; set; }
         public virtual File File { get; set; }
+        public bool IsCurrentPoster { get; set; }
     }
 }
