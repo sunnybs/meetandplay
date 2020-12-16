@@ -1,13 +1,16 @@
+using System;
 using MeetAndPlay.Data.Models.Files;
 using MeetAndPlay.Data.Models.Games;
 using MeetAndPlay.Data.Models.Offers;
 using MeetAndPlay.Data.Models.Places;
 using MeetAndPlay.Data.Models.Users;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeetAndPlay.Core.Infrastructure
 {
-    public class MNPContext : DbContext
+    public class MNPContext : IdentityDbContext<User, Role, Guid>
     {
         public DbSet<File> Files { get; set; }
         public DbSet<Game> Games { get; set; }
@@ -39,6 +42,8 @@ namespace MeetAndPlay.Core.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            
             modelBuilder.Entity<GameGenre>()
                 .HasKey(key => new {key.GameId, key.GenreId});
             
@@ -74,6 +79,9 @@ namespace MeetAndPlay.Core.Infrastructure
             
             modelBuilder.Entity<UserSocialNetwork>()
                 .HasKey(key => new {key.UserId, key.SocialNetworkId});
+            
+            modelBuilder.Entity<UserRole>()
+                .HasKey(key => new {key.UserId, key.RoleId});
         }
     }
 }

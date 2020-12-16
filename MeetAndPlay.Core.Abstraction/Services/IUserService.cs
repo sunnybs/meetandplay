@@ -8,6 +8,6 @@ namespace MeetAndPlay.Core.Abstraction.Services
     {
         Task<User> GetCurrentUserAsync();
         Task<Guid> GetCurrentUserIdAsync();
-        Task<User> GetUserByIdAsync();
+        Task<User> GetUserByIdAsync(Guid id);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 namespace MeetAndPlay.Data.Models.Users
 {
     public class User : IdentityUser<Guid>
+    
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -18,5 +19,6 @@ namespace MeetAndPlay.Data.Models.Users
         public ICollection<UserImage> UserImages { get; set; }
         public ICollection<UserSocialNetwork> UserSocialNetworks { get; set; }
         public ICollection<UserFreePeriod> UserFreePeriods { get; set; }
+        public ICollection<UserRole> UserRoles { get; set; }
     }
 }
