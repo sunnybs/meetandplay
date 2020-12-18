@@ -1,0 +1,10 @@
+@page "/Profile"
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@attribute [Authorize]
+
+@{
+    var username = HttpContextAccessor.HttpContext.User.Identity.Name;
+}
+
+<h3>Welcome, @username.</h3>

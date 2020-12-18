@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Authentication
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.NavigateTo($"/auth_endpoint?returnUrl={NavigationManager.Uri}",true);
+    }
+
+}

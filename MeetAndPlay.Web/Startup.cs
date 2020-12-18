@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Services;
+using MeetAndPlay.Web.Infrastructure;
+using MeetAndPlay.Web.Middlewares;
+using MeetAndPlay.Web.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +15,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MeetAndPlay.Web.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace MeetAndPlay.Web
 {
@@ -31,6 +39,31 @@ namespace MeetAndPlay.Web
             services.AddRazorPages();
 
             services.AddHttpContextAccessor();
+
+            services.AddOptions();
+
+            var authSection = Configuration.GetSection("Auth");
+            var authOptions = Configuration.GetSection("Auth").Get<Auth>();
+            services.Configure<Auth>(authSection);
+            
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultScheme = "Cookies";
+                    options.DefaultChallengeScheme = "oidc";
+                })
+                .AddCookie("Cookies")
+                .AddOpenIdConnect("oidc", options =>
+                {
+                    options.NonceCookie.SameSite = SameSiteMode.Unspecified;
+                    options.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
+
+                    options.Authority = authOptions.Authority;
+                    options.ClientId = authOptions.ClientId;
+                    options.ClientSecret = authOptions.ClientSecret;
+                    options.ResponseType = "code";
+                });
+            
+            services.AddScoped<AuthenticationStateProvider, CoreAuthenticationStateProvider>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
@@ -56,6 +89,11 @@ namespace MeetAndPlay.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseMiddleware<OidcRedirectMiddleware>();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();

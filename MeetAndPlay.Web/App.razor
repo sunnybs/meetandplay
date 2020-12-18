@@ -1,10 +1,27 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @if (HttpContextAccessor.HttpContext?.User?.Identity != null && HttpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                    {
+                        <h3>Извините, у вас нет доступа к данной стрианице</h3>
+                    }
+                    else
+                    {
+                        <RedirectToAuthentificate/>
+                    }
+                    
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Извините, ничего не найдено по этому адресу.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
