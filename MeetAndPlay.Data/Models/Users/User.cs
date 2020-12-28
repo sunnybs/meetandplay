@@ -13,6 +13,7 @@ namespace MeetAndPlay.Data.Models.Users
         public string LastName { get; set; }
         public Gender Gender { get; set; }
         public string About { get; set; }
+        public DateTime LastCredentialsChangeDate { get; set; }
         public ICollection<UserOffer> UserOffers { get; set; }
         public ICollection<LobbyPlayer> UserLobbies { get; set; }
         public ICollection<UserGame> UserGames { get; set; }

@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityModel;
@@ -47,7 +48,8 @@ namespace IdentityServerHost.Quickstart.UI.Register
                 PhoneNumber = registerModel.PhoneNumber,
                 FirstName = registerModel.FirstName,
                 LastName = registerModel.LastName,
-                Gender = registerModel.Gender
+                Gender = registerModel.Gender,
+                LastCredentialsChangeDate = DateTime.Now
             };
 
             var result = await _userManager.CreateAsync(newUser, registerModel.Password);

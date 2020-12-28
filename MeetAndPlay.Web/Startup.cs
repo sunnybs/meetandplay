@@ -61,9 +61,15 @@ namespace MeetAndPlay.Web
                     options.ClientId = authOptions.ClientId;
                     options.ClientSecret = authOptions.ClientSecret;
                     options.ResponseType = "code";
+                    options.GetClaimsFromUserInfoEndpoint = true;
+                    foreach (var scope in authOptions.AllowedScopes.Split(" "))
+                    {
+                        options.Scope.Add(scope);
+                    }
                 });
             
             services.AddScoped<AuthenticationStateProvider, CoreAuthenticationStateProvider>();
+            services.AddScoped<IUserAuthenticationService, CookieUserAuthenticationService>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();

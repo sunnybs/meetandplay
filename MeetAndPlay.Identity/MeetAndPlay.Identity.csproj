@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MeetAndPlay.Core\MeetAndPlay.Core.csproj" />
-    <ProjectReference Include="..\MeetAndPlay.Data.Postgres.Migrations\MeetAndPlay.Data.Postgres.Migrations.csproj" />
     <ProjectReference Include="..\MeetAndPlay.Data\MeetAndPlay.Data.csproj" />
   </ItemGroup>
 </Project>

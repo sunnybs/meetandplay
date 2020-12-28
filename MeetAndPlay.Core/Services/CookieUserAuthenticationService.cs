@@ -21,14 +21,20 @@ namespace MeetAndPlay.Core.Services
             if (context == null)
                 throw new NullReferenceException(nameof(context));
             
-            if (context.User.Identity != null && !context.User.Identity.IsAuthenticated)
+            if (!IsAuthenticated())
                 throw new NoUserContextException($"Request {context.Request.Path} require user authentication");
             
-            var loginClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
+            var loginClaim = context.User.FindFirst("name");
             if (loginClaim == null)
                 throw new NoUserContextException($"Request {context.Request.Path} require user authentication");
 
             return loginClaim.Value;
+        }
+
+        public bool IsAuthenticated()
+        {
+            var context = _httpContextAccessor.HttpContext;
+            return context?.User?.Identity?.IsAuthenticated ?? false;
         }
     }
 }

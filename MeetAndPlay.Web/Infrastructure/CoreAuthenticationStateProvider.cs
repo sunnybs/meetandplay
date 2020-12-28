@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ namespace MeetAndPlay.Web.Infrastructure
         private readonly IServiceScopeFactory _scopeFactory;
 
         private const string IdClaim = "sub";
-        private const string SecurityStampClaim = "AspNet.Identity.SecurityStamp";
+        private const string AuthTimeClaim = "auth_time";
         
         public CoreAuthenticationStateProvider(ILoggerFactory loggerFactory, IServiceScopeFactory scopeFactory) : base(loggerFactory)
         {
@@ -52,8 +53,8 @@ namespace MeetAndPlay.Web.Infrastructure
             if (user == null)
                 return false;
             
-            var principalStamp = principal.FindFirstValue(SecurityStampClaim);
-            return principalStamp == user.SecurityStamp;
+            var authTime = long.Parse(principal.FindFirstValue(AuthTimeClaim));
+            return user.LastCredentialsChangeDate <= authTime.FromUnixTime();
         }
     }
 }
