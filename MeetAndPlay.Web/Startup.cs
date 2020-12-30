@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services;
 using MeetAndPlay.Web.Infrastructure;
+using MeetAndPlay.Web.Mapper;
 using MeetAndPlay.Web.Middlewares;
 using MeetAndPlay.Web.Options;
 using Microsoft.AspNetCore.Builder;
@@ -20,6 +23,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace MeetAndPlay.Web
 {
@@ -42,6 +46,8 @@ namespace MeetAndPlay.Web
 
             services.AddOptions();
 
+            services.AddDbContext<MNPContext>(ConfigureDbContext);
+            
             var authSection = Configuration.GetSection("Auth");
             var authOptions = Configuration.GetSection("Auth").Get<Auth>();
             services.Configure<Auth>(authSection);
@@ -70,12 +76,24 @@ namespace MeetAndPlay.Web
             
             services.AddScoped<AuthenticationStateProvider, CoreAuthenticationStateProvider>();
             services.AddScoped<IUserAuthenticationService, CookieUserAuthenticationService>();
+            services.AddScoped<ILobbyService, LobbyService>();
+            services.AddScoped<IReadService, MockReadService>();
+            services.AddScoped<IUserService, UserService>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
             services.AddScoped<IOfferAggregator, OfferAggregator>();
+
+            
+            services.AddAutoMapper(typeof(LobbyProfile));
         }
 
+        private void ConfigureDbContext(DbContextOptionsBuilder options)
+        {
+            options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
+                sql => sql.MigrationsAssembly(Data.Consts.Infrastructure.MigrationAssembly));
+        }
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

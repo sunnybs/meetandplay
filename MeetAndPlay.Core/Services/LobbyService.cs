@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MeetAndPlay.Core.Services
 {
-    public class LobbyService
+    public class LobbyService : ILobbyService
     {
         private readonly MNPContext _mnpContext;
         private readonly IUserService _userService;

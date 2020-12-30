@@ -16,6 +16,7 @@ namespace MeetAndPlay.Data.Models.Offers
         public int MaxPlayersCount { get; set; }
         public int CurrentPlayersCount { get; set; }
         public bool IsActive { get; set; }
+        
         public PlaceType PlaceType { get; set; }
         
         public ICollection<LobbyGame> LobbyGames { get; set; }

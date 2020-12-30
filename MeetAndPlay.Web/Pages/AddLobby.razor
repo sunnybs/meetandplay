@@ -1,0 +1,53 @@
+@page "/AddLobby/{Id}"
+@using MeetAndPlay.Core.Abstraction.Services
+@using MeetAndPlay.Web.ViewModels
+@using AutoMapper
+@attribute [Authorize]
+@inject ILobbyService LobbyService
+@inject IMapper Mapper
+@inject IReadService Mock
+
+<div class="my-4">
+    <h3>@GetPageName()</h3>
+</div>
+<div class="form-group">
+    <label>Выберите игру</label>
+    @*/
+    <Select2 @ref="@ProvidedSelect2Ref" TItem="SomeInnerObject"
+              Id="get-paged-data-inner-obj-example"
+              GetPagedData="@(query => Task.FromResult(
+                                InnerObjectList
+                                    .Where(x => string.IsNullOrWhiteSpace(query.Term) || x.InnerName.Contains(query.Term, StringComparison.OrdinalIgnoreCase))
+                                    .Skip((query.Page - 1) * query.Size)
+                                    .Take(query.Size)
+                                    .ToList()))"
+              @bind-Value="@MockResult"
+              TextExpression="@(item => item.InnerName)">
+    </Select2>
+    /*@
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    public AddLobbyViewModel LobbyModel = new ();
+
+    public NamedViewModel MockResult = new NamedViewModel();
+
+    public ElementReference ProvidedSelect2Ref;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id != null && Guid.TryParse(Id, out var parsedId))
+        {
+            var lobby = await LobbyService.GetLobbyByIdAsync(parsedId);
+            LobbyModel = Mapper.Map<AddLobbyViewModel>(lobby);
+        }
+    }
+
+    public string GetPageName()
+    {
+        return Id != null ? "Обновить лобби" : "Создать лобби";
+    }
+}
