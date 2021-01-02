@@ -5,6 +5,7 @@ html, body {
     max-width: 1368px;
     margin: 0 auto !important;
     float: none !important;
+    position: relative;
 }
 
 @media (max-width: 1369px){
@@ -12,6 +13,7 @@ html, body {
         max-width: 1080px;
         margin: 0 auto !important;
         float: none !important;
+        position: relative;
     }
 }
 

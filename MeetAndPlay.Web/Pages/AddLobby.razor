@@ -5,27 +5,20 @@
 @attribute [Authorize]
 @inject ILobbyService LobbyService
 @inject IMapper Mapper
-@inject IReadService Mock
 
 <div class="my-4">
     <h3>@GetPageName()</h3>
 </div>
 <div class="form-group">
     <label>Выберите игру</label>
-    @*/
-    <Select2 @ref="@ProvidedSelect2Ref" TItem="SomeInnerObject"
-              Id="get-paged-data-inner-obj-example"
-              GetPagedData="@(query => Task.FromResult(
-                                InnerObjectList
-                                    .Where(x => string.IsNullOrWhiteSpace(query.Term) || x.InnerName.Contains(query.Term, StringComparison.OrdinalIgnoreCase))
-                                    .Skip((query.Page - 1) * query.Size)
-                                    .Take(query.Size)
-                                    .ToList()))"
-              @bind-Value="@MockResult"
-              TextExpression="@(item => item.InnerName)">
+    <Select2 TItem="NamedViewModel"
+             Id="games-select"
+             Data="@Resources"
+             TextExpression="@(item => item.Name)"
+             @bind-Value="@MockResult">
     </Select2>
-    /*@
 </div>
+<h3>@MockResult.Name</h3>
 
 @code {
     [Parameter]
@@ -33,9 +26,17 @@
 
     public AddLobbyViewModel LobbyModel = new ();
 
-    public NamedViewModel MockResult = new NamedViewModel();
+    public NamedViewModel MockResult = new();
 
-    public ElementReference ProvidedSelect2Ref;
+    public List<NamedViewModel> Resources = new()
+    {
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 1"},
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 2"},
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 3"},
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 4"},
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 5"},
+        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 6"},
+    };
     
     protected override async Task OnInitializedAsync()
     {

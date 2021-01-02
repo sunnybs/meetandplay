@@ -29,4 +29,8 @@
       <PackageReference Include="Radzen.Blazor" Version="2.18.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="wwwroot\js\select2.blazor.js" />
+    </ItemGroup>
+
 </Project>

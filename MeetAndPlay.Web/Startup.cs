@@ -77,7 +77,6 @@ namespace MeetAndPlay.Web
             services.AddScoped<AuthenticationStateProvider, CoreAuthenticationStateProvider>();
             services.AddScoped<IUserAuthenticationService, CookieUserAuthenticationService>();
             services.AddScoped<ILobbyService, LobbyService>();
-            services.AddScoped<IReadService, MockReadService>();
             services.AddScoped<IUserService, UserService>();
             
             services.AddServerSideBlazor();
