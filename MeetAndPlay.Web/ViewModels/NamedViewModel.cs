@@ -10,11 +10,16 @@ namespace MeetAndPlay.Web.ViewModels
 
         public static NamedViewModel CreateFrom(NamedEntityDto dto)
         {
-            return new NamedViewModel
+            return new()
             {
                 Id = dto.Id,
                 Name = dto.Name
             };
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
         }
     }
 }

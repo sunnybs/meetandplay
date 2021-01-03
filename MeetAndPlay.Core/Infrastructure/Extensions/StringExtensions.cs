@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MeetAndPlay.Core.Infrastructure.Extensions
 {
     public static class StringExtensions
@@ -5,6 +7,11 @@ namespace MeetAndPlay.Core.Infrastructure.Extensions
         public static bool IsNullOrWhiteSpace(this string source)
         {
             return string.IsNullOrWhiteSpace(source);
+        }
+
+        public static string JoinAsString(this IEnumerable<string> source, string separator)
+        {
+            return string.Join(separator, source);
         }
     }
 }

@@ -1,28 +1,36 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MeetAndPlay.Core.Infrastructure.Extensions;
 using MeetAndPlay.Web.Components.Select2.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using Select2QueryData = MeetAndPlay.Web.Components.Select2.Models.Select2QueryData;
 
 namespace MeetAndPlay.Web.Components.Select2
 {
     public class Select2Base<TItem> : ComponentBase, IDisposable
     {
-        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private readonly JsonSerializerOptions _jsonSerializerOptions =
-            new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            new() {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
+
+        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+        private DotNetObjectReference<Select2Base<TItem>> _elementRef;
+        private Type _nullableUnderlyingType;
+        private ValidationMessageStore _parsingValidationMessages;
+        private bool _previousParsingAttemptFailed;
+
+        /// <summary>
+        ///     Constructs an instance of <see cref="Select2Base{TItem}" />.
+        /// </summary>
+        protected Select2Base()
+        {
+            _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
+        }
 
         [Inject] private IJSRuntime JSRuntime { get; set; }
-        private DotNetObjectReference<Select2Base<TItem>> _elementRef;
-        private bool _previousParsingAttemptFailed;
-        private ValidationMessageStore _parsingValidationMessages;
-        private Type _nullableUnderlyingType;
 
         [CascadingParameter] public EditContext CascadingEditContext { get; set; }
 
@@ -31,6 +39,10 @@ namespace MeetAndPlay.Web.Components.Select2
         [Parameter] public string Id { get; set; }
 
         [Parameter] public bool IsDisabled { get; set; }
+
+        [Parameter] public bool IsMultiple { get; set; }
+
+        [Parameter] public bool AllowClear { get; set; }
 
         [Parameter] public Func<TItem, bool> IsOptionDisabled { get; set; } = item => false;
 
@@ -42,74 +54,55 @@ namespace MeetAndPlay.Web.Components.Select2
 
         [Parameter] public Func<TItem, string> TextExpression { get; set; } = item => item.ToString();
 
-        [Parameter] public string Placeholder { get; set; } = "Select value";
+        [Parameter] public string Placeholder { get; set; } = "Выберите...";
 
         [Parameter] public string Theme { get; set; } = "bootstrap";
 
-        [Parameter] public bool AllowClear { get; set; }
         /// <summary>
-        /// Gets or sets an expression that identifies the bound value.
-        /// </summary>
-        [Parameter] public Expression<Func<TItem>> ValueExpression { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value of the input. This should be used with two-way binding.
+        ///     Gets or sets the value of the input. This should be used with two-way binding.
         /// </summary>
         /// <example>
-        /// @bind-Value="model.PropertyName"
+        ///     @bind-Value="model.PropertyName"
         /// </example>
         [Parameter]
-        public TItem Value { get; set; }
+        public HashSet<TItem> Values { get; set; }
 
-        /// <summary>
-        /// Gets or sets a callback that updates the bound value.
-        /// </summary>
-        [Parameter] public EventCallback<TItem> ValueChanged { get; set; }
+        [Parameter] public EventCallback<HashSet<TItem>> ValuesChanged { get; set; }
+
+        protected Dictionary<string, TItem> InternallyMappedData { get; set; } = new();
+
+        protected string FieldClass => "form-group";
+
+        protected EditContext GivenEditContext { get; set; }
+
+        protected HashSet<TItem> CurrentValues
+        {
+            get => Values;
+            set
+            {
+                _ = SelectItems(value);
+
+                var hasChanged = value.Count != Values.Count || !Values.SetEquals(value);
+                if (!hasChanged) return;
+
+                Values = value;
+                _ = ValuesChanged.InvokeAsync(value);
+            }
+        }
+
+        void IDisposable.Dispose()
+        {
+            if (GivenEditContext != null) GivenEditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+
+            Dispose(true);
+        }
 
         public void Refresh()
         {
             StateHasChanged();
         }
 
-        /// <summary>
-        /// Constructs an instance of <see cref="Select2Base{TItem}"/>.
-        /// </summary>
-        protected Select2Base()
-        {
-            _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
-        }
-
-        protected Dictionary<string, TItem> InternallyMappedData { get; set; } = new Dictionary<string, TItem>();
-
-        protected string FieldClass => GivenEditContext?.FieldCssClass(FieldIdentifier) ?? "form-group";
-
-        protected EditContext GivenEditContext { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="FieldIdentifier"/> for the bound value.
-        /// </summary>
-        protected FieldIdentifier FieldIdentifier { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current value of the input.
-        /// </summary>
-        protected TItem CurrentValue
-        {
-            get => Value;
-            set
-            {
-                _ = SelectItem(value);
-
-                var hasChanged = !EqualityComparer<TItem>.Default.Equals(value, Value);
-                if (!hasChanged) return;
-
-                Value = value;
-                _ = ValueChanged.InvokeAsync(value);
-                GivenEditContext?.NotifyFieldChanged(FieldIdentifier);
-            }
-        }
-
-        protected bool TryParseValueFromString(string value, out TItem result)
+        private bool TryParseValueFromString(string value, out TItem result)
         {
             result = default;
 
@@ -123,6 +116,23 @@ namespace MeetAndPlay.Web.Components.Select2
             return true;
         }
 
+        private bool TryParseValues(string[] values, out HashSet<TItem> result)
+        {
+            result = new HashSet<TItem>();
+            foreach (var value in values)
+            {
+                if (value == "null" || value.IsNullOrWhiteSpace())
+                    continue;
+
+                if (!InternallyMappedData.ContainsKey(value))
+                    return false;
+
+                result.Add(InternallyMappedData[value]);
+            }
+
+            return true;
+        }
+
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
@@ -133,14 +143,13 @@ namespace MeetAndPlay.Web.Components.Select2
         {
             parameters.SetParameterProperties(this);
 
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TItem));
             GivenEditContext = EditContext ?? CascadingEditContext;
             if (GivenEditContext != null)
                 GivenEditContext.OnValidationStateChanged += _validationStateChangedHandler;
 
             GetPagedData ??= GetStaticData;
-            
+
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
         }
@@ -155,36 +164,39 @@ namespace MeetAndPlay.Web.Components.Select2
                 {
                     placeholder = Placeholder,
                     allowClear = AllowClear,
-                    theme = Theme
+                    theme = Theme,
+                    multiple = IsMultiple
                 }, _jsonSerializerOptions);
 
                 await JSRuntime.InvokeVoidAsync("select2Blazor.init",
                     Id, _elementRef, options, "select2Blazor_GetData");
-                
-                CurrentValue = ValueExpression.Compile().Invoke();
-                
-                if (CurrentValue != null)
-                    await SelectItem(CurrentValue);
 
+                if (CurrentValues != null)
+                    await SelectItems(CurrentValues);
+
+                var changeCallback = IsMultiple ? "select2Blazor_OnChange_multiple" : "select2Blazor_OnChange";
                 await JSRuntime.InvokeVoidAsync("select2Blazor.onChange",
-                    Id, _elementRef, "select2Blazor_OnChange");
+                    Id, _elementRef, changeCallback);
             }
         }
 
         private Task<List<TItem>> GetStaticData(Select2QueryData query)
         {
-            if (query.Page != 1) 
+            if (query.Page != 1)
                 return Task.FromResult(default(List<TItem>));
 
             var data = Data;
             var searchTerm = query.Term;
             if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
                 data = data
                     .Where(x => TextExpression(x).Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
-            }
             return Task.FromResult(data);
+        }
+
+        private async Task SelectItems(IEnumerable<TItem> items)
+        {
+            foreach (var item in items.Where(i => i != null)) await SelectItem(item);
         }
 
         private async Task SelectItem(TItem item)
@@ -194,14 +206,14 @@ namespace MeetAndPlay.Web.Components.Select2
             await JSRuntime.InvokeVoidAsync("select2Blazor.select", Id, mappedItem);
         }
 
-        internal Select2Item MapToSelect2Item(TItem item)
+        private Select2Item MapToSelect2Item(TItem item)
         {
             var id = GetId(item);
             var select2Item = new Select2Item(id, TextExpression(item), IsOptionDisabled(item));
             if (OptionTemplate != null)
                 select2Item.Html = OptionTemplate(item);
-            if (Value != null)
-                select2Item.Selected = GetId(Value) == id;
+            if (Values != null)
+                select2Item.Selected = Values.Select(GetId).Contains(id);
             return select2Item;
         }
 
@@ -217,16 +229,17 @@ namespace MeetAndPlay.Web.Components.Select2
                 InternallyMappedData.Clear();
 
             var response = new Select2Response();
-            if (data != null)
+            if (data == null) 
+                return JsonSerializer.Serialize(response, _jsonSerializerOptions);
+            
+            foreach (var item in data)
             {
-                foreach (var item in data)
-                {
-                    var mappedItem = MapToSelect2Item(item);
-                    InternallyMappedData[mappedItem.Id] = item;
-                    response.Results.Add(mappedItem);
-                }
-                response.Pagination.More = data.Count == queryParams.Data.Size;
+                var mappedItem = MapToSelect2Item(item);
+                InternallyMappedData[mappedItem.Id] = item;
+                response.Results.Add(mappedItem);
             }
+
+            response.Pagination.More = data.Count == queryParams.Data.Size;
 
             return JsonSerializer.Serialize(response, _jsonSerializerOptions);
         }
@@ -244,26 +257,19 @@ namespace MeetAndPlay.Web.Components.Select2
                 // Then all subclasses get nullable support almost automatically (they just have to
                 // not reject Nullable<T> based on the type itself).
                 parsingFailed = false;
-                CurrentValue = default;
+                CurrentValues = default;
             }
             else if (TryParseValueFromString(value, out var parsedValue))
             {
                 parsingFailed = false;
-                CurrentValue = parsedValue;
+                CurrentValues = new HashSet<TItem> {parsedValue};
             }
             else
             {
                 parsingFailed = true;
 
                 if (_parsingValidationMessages == null)
-                {
                     _parsingValidationMessages = new ValidationMessageStore(GivenEditContext);
-                }
-
-                _parsingValidationMessages.Add(FieldIdentifier, "Given value was not found");
-
-                // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                GivenEditContext?.NotifyFieldChanged(FieldIdentifier);
             }
 
             // We can skip the validation notification if we were previously valid and still are
@@ -274,20 +280,54 @@ namespace MeetAndPlay.Web.Components.Select2
             }
         }
 
-        private static string GetId(TItem item) => item.GetHashCode().ToString();
+        [JSInvokable("select2Blazor_OnChange_multiple")]
+        public void ChangeMultiple(string[] values)
+        {
+            _parsingValidationMessages?.Clear();
+
+            bool parsingFailed;
+
+            if (_nullableUnderlyingType != null && values?.Any() == false)
+            {
+                // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
+                // Then all subclasses get nullable support almost automatically (they just have to
+                // not reject Nullable<T> based on the type itself).
+                parsingFailed = false;
+                CurrentValues = default;
+            }
+            else if (TryParseValues(values, out var parsedValues))
+            {
+                parsingFailed = false;
+                CurrentValues = parsedValues;
+            }
+            else
+            {
+                parsingFailed = true;
+
+                if (_parsingValidationMessages == null)
+                    _parsingValidationMessages = new ValidationMessageStore(GivenEditContext);
+
+                //_parsingValidationMessages.Add(FieldIdentifier, "Given value was not found");
+
+                // Since we're not writing to CurrentValue, we'll need to notify about modification from here
+                //GivenEditContext?.NotifyFieldChanged(FieldIdentifier);
+            }
+
+            // We can skip the validation notification if we were previously valid and still are
+            if (parsingFailed || _previousParsingAttemptFailed)
+            {
+                GivenEditContext?.NotifyValidationStateChanged();
+                _previousParsingAttemptFailed = parsingFailed;
+            }
+        }
+
+        private static string GetId(TItem item)
+        {
+            return item.GetHashCode().ToString();
+        }
 
         protected virtual void Dispose(bool disposing)
         {
-        }
-
-        void IDisposable.Dispose()
-        {
-            if (GivenEditContext != null)
-            {
-                GivenEditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-            }
-
-            Dispose(disposing: true);
         }
     }
 }

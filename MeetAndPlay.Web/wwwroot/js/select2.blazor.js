@@ -36,6 +36,9 @@ window.select2Blazor = {
     },
     select: function(id, value) {
         if (value) {
+            if (value.text === undefined || value.text === "")
+                return;
+            
             var $select2 = $('#' + id);
             var selection = $('#' + id).select2('data');
             var isAlreadySelected = selection.filter(x => x.id === value.id).length > 0;
@@ -55,7 +58,11 @@ window.select2Blazor = {
         }
     },
     onChange: function (id, dotnetHelper, nameFunc) {
-        $('#' + id).on('select2:select', function (e) {
+        const $select = $('#' + id);
+        $select.on('select2:select', function (e) {
+            dotnetHelper.invokeMethodAsync(nameFunc, $('#' + id).val());
+        });
+        $select.on('select2:unselect', function (e) {
             dotnetHelper.invokeMethodAsync(nameFunc, $('#' + id).val());
         });
     }
