@@ -3,15 +3,17 @@ using System;
 using MeetAndPlay.Core.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MeetAndPlay.Core.Migrations
 {
     [DbContext(typeof(MNPContext))]
-    partial class MNPContextModelSnapshot : ModelSnapshot
+    [Migration("20210103105259_AddDescriptionHtml")]
+    partial class AddDescriptionHtml
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,9 +79,6 @@ namespace MeetAndPlay.Core.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

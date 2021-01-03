@@ -18,6 +18,11 @@ namespace MeetAndPlay.API
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(builder =>
+                {
+                    builder.ClearProviders();
+                    builder.AddConsole();
+                })
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

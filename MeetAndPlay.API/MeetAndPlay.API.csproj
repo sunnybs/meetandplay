@@ -1,13 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-    </PropertyGroup>
+      <UserSecretsId>b8ca1caf-6e6a-4a22-9692-97a97c108619</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" NoWarn="NU1605"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.0" NoWarn="NU1605"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" NoWarn="NU1605" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.0" NoWarn="NU1605" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MeetAndPlay.Core.Abstraction\MeetAndPlay.Core.Abstraction.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Core\MeetAndPlay.Core.csproj" />
+      <ProjectReference Include="..\MeetAndPlay.Data\MeetAndPlay.Data.csproj" />
     </ItemGroup>
 
 </Project>

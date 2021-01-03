@@ -9,7 +9,10 @@ namespace MeetAndPlay.Data.Models.Games
     {
         public string Name { get; set; }
         public virtual ICollection<GameGenre> GameGenres { get; set; }
+        public virtual ICollection<GameImage> GameImages { get; set; }
         public string Description { get; set; }
+        public string DescriptionHtml { get; set; }
+        public int Year { get; set; }
         public DateTime CreationDate { get; set; }
         public bool IsActive { get; set; }
         public int MinPlayersCount { get; set; }
