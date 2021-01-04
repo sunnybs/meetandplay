@@ -31,5 +31,13 @@ namespace MeetAndPlay.Core.Infrastructure.Extensions
             if (currentGroup.Any())
                 yield return currentGroup;
         }
+        
+        public static IQueryable<TEntity> TakePage<TEntity>(this IQueryable<TEntity> query, int pageSize, int pageNumber)
+            where TEntity : class
+        {
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            return query;
+        }
+
     }
 }

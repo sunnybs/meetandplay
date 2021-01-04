@@ -1,11 +1,12 @@
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MeetAndPlay.Data.DTO.ReadFilters;
 using MeetAndPlay.Data.Enums;
 
 namespace MeetAndPlay.Data.DTO.OfferAggregator
 {
-    public class OffersFilterDto : PagingDto
+    public class OffersFilterDto : ReadFilter
     {
         public OfferType? OfferType { get; set; }
         public DateTime? From { get; set; }

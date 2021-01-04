@@ -1,68 +1,121 @@
 @page "/AddLobby/{Id}"
-@using MeetAndPlay.Core.Abstraction.Services
-@using MeetAndPlay.Web.ViewModels
-@using AutoMapper
+@page "/AddLobby"
 @using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Core.Abstraction.Services
+@using AutoMapper
+@using MeetAndPlay.Data.Models.Games
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Web.ViewModels
 @attribute [Authorize]
 @inject ILobbyService LobbyService
+@inject IGamesService GamesService
 @inject IMapper Mapper
 
 <div class="my-4">
-    <h3>@GetPageName()</h3>
+    <h3>@PageName</h3>
 </div>
-<div class="form-group">
-    <label>Выберите игры</label>
-    <Select2 TItem="NamedViewModel"
-             Id="games-select"
-             Data="@Resources"
-             IsMultiple="@true"
-             TextExpression="@(item => item.Name)"
-             @bind-Values="@MockResult">
-    </Select2>
-</div>
-<h3>@MockResult.Select(r => r.Name).JoinAsString(", ")</h3>
-<div class="form-group">
-    <label>Выберите игру</label>
-    <Select2 TItem="NamedViewModel"
-             Id="game-select"
-             Data="@Resources"
-             IsMultiple="@false"
-             TextExpression="@(item => item.Name)"
-             @bind-Values="@MockResult1">
-    </Select2>
-</div>
-<h3>@MockResult1.Select(r => r.Name).JoinAsString(", ")</h3>
+<EditForm Model="@_lobbyModel">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <div class="form-group">
+        <label>
+            Выберите игры
+        </label>
+        <Select2 TItem="Game"
+                 Id="games-select"
+                 IsMultiple="@true"
+                 TextExpression="@(item => item.Name)"
+                 Source="@GamesService"
+                 @bind-Values="@_lobbyModel.Games">
+        </Select2>
+    </div>
+    <div class="form-group">
+        <label>
+            Выберите уровень игры <small>необязательно</small>
+        </label>
+        <select class="form-control" @bind="@_lobbyModel.GameLevel">
+            @foreach (GameLevel value in Enum.GetValues(typeof(GameLevel)))
+            {
+                <option value="@value">@value.GetDescription()</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>
+            Какое необходимое количество участников для игры?
+        </label>
+        <input type="number" class="form-control" @bind=@_lobbyModel.MaxPlayersCount placeholder="Введите количество человек">
+    </div>
+    <div class="form-group">
+        <label>
+            Сколько вас уже человек? <small>необязательно</small>
+        </label>
+        <input type="number" class="form-control" @bind=@_lobbyModel.CurrentPlayersCount placeholder="Введите количество человек">
+    </div>
+    <div class="form-group">
+        <label>
+            Когда вы планируете поиграть?
+        </label>
+        <RadzenDatePicker @bind-Value=@_lobbyModel.PlannedGameDate DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Где бы вы хотели поиграть? <small>необязательно</small>
+        </label>
+        <select class="form-control" @bind="@_lobbyModel.PlaceType">
+            @foreach (PlaceType value in Enum.GetValues(typeof(PlaceType)))
+            {
+                <option value="@value">@value.GetDescription()</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Ваши пожелания <small>необязательно</small>
+        </label>
+        <textarea class="form-control" @bind=@_lobbyModel.Description rows="3"></textarea>
+    </div>
+    <div class="form-group">
+        <label>
+            Название встречи <small>необязательно</small>
+        </label>
+        <input type="text" class="form-control" @bind=@_lobbyModel.Title>
+    </div>
+
+    <div class="form-group">
+        <button class="btn btn-warning bg-lightyellow" type="submit">@SubmitName</button>
+    </div>
+</EditForm>
+
+
+
 
 @code {
+
     [Parameter]
     public string Id { get; set; }
 
-    public AddLobbyViewModel LobbyModel = new ();
+    private bool IsUpdating => Id != null;
+    private string PageName => IsUpdating ? "Обновить лобби" : "Создать лобби";
+    private string SubmitName => IsUpdating ? "Обновить" : "Создать";
 
-    public HashSet<NamedViewModel> MockResult = new();
-    public HashSet<NamedViewModel> MockResult1 = new();
+    private AddLobbyViewModel _lobbyModel = new();
 
-    public List<NamedViewModel> Resources = new()
-    {
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 1"},
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 2"},
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 3"},
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 4"},
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 5"},
-        new NamedViewModel {Id = Guid.NewGuid(), Name = "Тестовые данные 6"},
-    };
-    
     protected override async Task OnInitializedAsync()
     {
         if (Id != null && Guid.TryParse(Id, out var parsedId))
         {
             var lobby = await LobbyService.GetLobbyByIdAsync(parsedId);
-            LobbyModel = Mapper.Map<AddLobbyViewModel>(lobby);
+            _lobbyModel = Mapper.Map<AddLobbyViewModel>(lobby);
         }
     }
 
-    public string GetPageName()
+    private async Task AddAsync()
     {
-        return Id != null ? "Обновить лобби" : "Создать лобби";
+        var lobby = Mapper.Map<Lobby>(_lobbyModel);
     }
 }

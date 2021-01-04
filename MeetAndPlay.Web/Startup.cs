@@ -6,6 +6,8 @@ using AutoMapper;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services;
+using MeetAndPlay.Core.Services.FilesService;
+using MeetAndPlay.Core.Services.GamesService;
 using MeetAndPlay.Web.Infrastructure;
 using MeetAndPlay.Web.Mapper;
 using MeetAndPlay.Web.Middlewares;
@@ -78,6 +80,8 @@ namespace MeetAndPlay.Web
             services.AddScoped<IUserAuthenticationService, CookieUserAuthenticationService>();
             services.AddScoped<ILobbyService, LobbyService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IGamesService, GamesService>();
+            services.AddScoped<IFilesService, FilesService>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();

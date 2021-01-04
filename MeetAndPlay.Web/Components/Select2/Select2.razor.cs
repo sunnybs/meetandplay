@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Abstraction.Services.ReadService;
 using MeetAndPlay.Core.Infrastructure.Extensions;
+using MeetAndPlay.Data.DTO;
+using MeetAndPlay.Data.DTO.ReadFilters;
 using MeetAndPlay.Web.Components.Select2.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -21,6 +25,7 @@ namespace MeetAndPlay.Web.Components.Select2
         private Type _nullableUnderlyingType;
         private ValidationMessageStore _parsingValidationMessages;
         private bool _previousParsingAttemptFailed;
+        private IReadService<TItem> _source;
 
         /// <summary>
         ///     Constructs an instance of <see cref="Select2Base{TItem}" />.
@@ -46,9 +51,22 @@ namespace MeetAndPlay.Web.Components.Select2
 
         [Parameter] public Func<TItem, bool> IsOptionDisabled { get; set; } = item => false;
 
-        [Parameter] public List<TItem> Data { get; set; }
 
-        [Parameter] public Func<Select2QueryData, Task<List<TItem>>> GetPagedData { get; set; }
+        [Parameter]
+        public IReadService<TItem> Source
+        {
+            get => _source;
+            set
+            {
+                _source = value;
+                GetPagedData = query => _source.GetAsync(new ReadFilter
+                    {PageNumber = query.Page, PageSize = query.Size, SearchTerm = query.Term});
+            }
+        }
+
+        [Parameter] public TItem[] Data { get; set; }
+
+        [Parameter] public Func<Select2QueryData, Task<TItem[]>> GetPagedData { get; set; }
 
         [Parameter] public Func<TItem, string> OptionTemplate { get; set; }
 
@@ -57,15 +75,8 @@ namespace MeetAndPlay.Web.Components.Select2
         [Parameter] public string Placeholder { get; set; } = "Выберите...";
 
         [Parameter] public string Theme { get; set; } = "bootstrap";
-
-        /// <summary>
-        ///     Gets or sets the value of the input. This should be used with two-way binding.
-        /// </summary>
-        /// <example>
-        ///     @bind-Value="model.PropertyName"
-        /// </example>
-        [Parameter]
-        public HashSet<TItem> Values { get; set; }
+        
+        [Parameter] public HashSet<TItem> Values { get; set; }
 
         [Parameter] public EventCallback<HashSet<TItem>> ValuesChanged { get; set; }
 
@@ -180,17 +191,17 @@ namespace MeetAndPlay.Web.Components.Select2
             }
         }
 
-        private Task<List<TItem>> GetStaticData(Select2QueryData query)
+        private Task<TItem[]> GetStaticData(Select2QueryData query)
         {
             if (query.Page != 1)
-                return Task.FromResult(default(List<TItem>));
+                return Task.FromResult(default(TItem[]));
 
             var data = Data;
             var searchTerm = query.Term;
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 data = data
                     .Where(x => TextExpression(x).Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                    .ToArray();
             return Task.FromResult(data);
         }
 
@@ -239,7 +250,7 @@ namespace MeetAndPlay.Web.Components.Select2
                 response.Results.Add(mappedItem);
             }
 
-            response.Pagination.More = data.Count == queryParams.Data.Size;
+            response.Pagination.More = data.Length == queryParams.Data.Size;
 
             return JsonSerializer.Serialize(response, _jsonSerializerOptions);
         }
