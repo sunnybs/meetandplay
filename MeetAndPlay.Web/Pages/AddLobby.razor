@@ -4,6 +4,7 @@
 @using MeetAndPlay.Data.Enums
 @using MeetAndPlay.Core.Abstraction.Services
 @using AutoMapper
+@using CurrieTechnologies.Razor.SweetAlert2
 @using MeetAndPlay.Data.Models.Games
 @using MeetAndPlay.Data.Models.Offers
 @using MeetAndPlay.Web.ViewModels
@@ -11,11 +12,12 @@
 @inject ILobbyService LobbyService
 @inject IGamesService GamesService
 @inject IMapper Mapper
+@inject SweetAlertService Swal
 
 <div class="my-4">
     <h3>@PageName</h3>
 </div>
-<EditForm Model="@_lobbyModel">
+<EditForm Model="@_lobbyModel" OnSubmit="@SubmitAsync">
     <DataAnnotationsValidator />
     <ValidationSummary />
     
@@ -114,8 +116,48 @@
         }
     }
 
+    private async Task SubmitAsync()
+    {
+        if (IsUpdating)
+        {
+            await UpdateAsync();
+        }
+        else
+        {
+            await AddAsync();
+        }
+    }
+    
     private async Task AddAsync()
     {
         var lobby = Mapper.Map<Lobby>(_lobbyModel);
+        lobby.LobbyGames = _lobbyModel.Games.Select(g => new LobbyGame {GameId = g.Id}).ToArray();
+        try
+        {
+            await LobbyService.AddLobbyAsync(lobby);
+            await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
+        }
+        catch (Exception e)
+        {
+            await Swal.FireAsync("Что-то пошло не так :(", e.Message, SweetAlertIcon.Error);
+        }
+    }
+    
+    private async Task UpdateAsync()
+    {
+        var parsedId = Guid.Parse(Id);
+        var lobby = Mapper.Map<Lobby>(_lobbyModel);
+        lobby.Id = parsedId;
+        lobby.LobbyGames = _lobbyModel.Games.Select(g => new LobbyGame {LobbyId = parsedId, GameId = g.Id}).ToArray();
+        
+        try
+        {
+            await LobbyService.UpdateLobbyAsync(lobby);
+            await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
+        }
+        catch (Exception e)
+        {
+            await Swal.FireAsync("Что-то пошло не так :(", e.Message, SweetAlertIcon.Error);
+        }
     }
 }

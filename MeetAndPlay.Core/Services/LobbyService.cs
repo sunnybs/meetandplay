@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Threading.Tasks;
@@ -75,6 +76,10 @@ namespace MeetAndPlay.Core.Services
         {
             lobby.CreationDate = DateTime.Now;
             lobby.IsActive = true;
+
+            var currentUserId = await _userService.GetCurrentUserIdAsync();
+            lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
+            
             await _mnpContext.AddAsync(lobby);
             await _mnpContext.SaveChangesAsync();
             return lobby.Id;
@@ -92,9 +97,9 @@ namespace MeetAndPlay.Core.Services
                 throw new NotFoundException($"Lobby with {lobby.Id} not found");
 
             await EnsureCurrentUserHasAccessToWriteAsync(lobby);
+            lobby.LobbyPlayers = oldLobby.LobbyPlayers;
             _mnpContext.Update(lobby);
             await _mnpContext.UpdateRelatedEntitiesAsync(lobby.LobbyGames, oldLobby.LobbyGames);
-            await _mnpContext.UpdateRelatedEntitiesAsync(lobby.LobbyPlayers, oldLobby.LobbyPlayers);
 
             await _mnpContext.SaveChangesAsync();
             return lobby.Id;
@@ -119,6 +124,7 @@ namespace MeetAndPlay.Core.Services
         {
             var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureRequestInitializedByCurrentUserAsync(request);
+
             request.InitialMessage = newMessage;
             await _mnpContext.SaveChangesAsync();
         }
@@ -128,17 +134,40 @@ namespace MeetAndPlay.Core.Services
             var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureCurrentUserCanChangeRequestStatusAsync(request);
             request.RequestStatus = requestStatus;
+            if (requestStatus == RequestStatus.Accepted 
+                && await _mnpContext.LobbyPlayers.AnyAsync(lp => lp.LobbyId == lobbyId && lp.PlayerId == userId))
+            {
+                await _mnpContext.AddAsync(new LobbyPlayer {LobbyId = lobbyId, PlayerId = userId, IsCreator = false});
+                var lobby = await _mnpContext.Lobbies.FindAsync(lobbyId);
+                lobby.CurrentPlayersCount++;
+            }
+
             await _mnpContext.SaveChangesAsync();
         }
 
         private async Task EnsureCurrentUserCanChangeRequestStatusAsync(LobbyJoiningRequest lobbyJoiningRequest)
         {
             var currentUserId = await _userService.GetCurrentUserIdAsync();
-            var isCurrentUserLobbyPlayer = await _mnpContext.LobbyJoiningRequests.AnyAsync(r =>
-                r.Lobby.LobbyPlayers.Select(p => p.PlayerId).Contains(currentUserId));
-
-            if (!isCurrentUserLobbyPlayer)
-                throw new NoAccessException($"User {currentUserId} can't change lobby request status");
+            switch (lobbyJoiningRequest.RequestInitiator)
+            {
+                case RequestInitiator.User:
+                {
+                    var isCurrentUserLobbyPlayer = await _mnpContext.LobbyJoiningRequests.AnyAsync(r =>
+                        r.Lobby.Id == lobbyJoiningRequest.LobbyId 
+                        && r.Lobby.LobbyPlayers.Select(p => p.PlayerId).Contains(currentUserId));
+                
+                    if (!isCurrentUserLobbyPlayer)
+                        throw new NoAccessException($"User {currentUserId} can't change lobby request status");
+                    break;
+                }
+                case RequestInitiator.Lobby:
+                {
+                    if (lobbyJoiningRequest.UserId != currentUserId)
+                        throw new NoAccessException($"User {currentUserId} can't change lobby request status");
+                    break;
+                }
+                    
+            }
         }
 
         private async Task EnsureRequestInitializedByCurrentUserAsync(LobbyJoiningRequest lobbyJoiningRequest)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using CurrieTechnologies.Razor.SweetAlert2;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services;
@@ -47,6 +48,10 @@ namespace MeetAndPlay.Web
             services.AddHttpContextAccessor();
 
             services.AddOptions();
+            services.AddSweetAlert2(options =>
+            {
+                options.Theme = SweetAlertTheme.Bootstrap4;
+            });
 
             services.AddDbContext<MNPContext>(ConfigureDbContext);
             
