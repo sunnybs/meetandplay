@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Infrastructure.Extensions;
 using MeetAndPlay.Data.DTO;

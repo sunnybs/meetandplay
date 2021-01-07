@@ -82,6 +82,8 @@ namespace MeetAndPlay.Core.Infrastructure
             
             modelBuilder.Entity<UserRole>()
                 .HasKey(key => new {key.UserId, key.RoleId});
+
+            modelBuilder.Entity<File>().HasIndex(f => f.Hash).IsUnique();
         }
     }
 }

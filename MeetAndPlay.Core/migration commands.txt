@@ -1,2 +1,4 @@
+Выполнять из директории MeetAndPlay.Core
+
 dotnet ef migrations add MigrationName --context MNPContext --startup-project ../MeetAndPlay.Web -v
 dotnet ef database update --context MNPContext --startup-project ../MeetAndPlay.Web -v

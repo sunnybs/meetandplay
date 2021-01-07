@@ -22,4 +22,8 @@
       <ProjectReference Include="..\MeetAndPlay.Data\MeetAndPlay.Data.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\uploads" />
+    </ItemGroup>
+
 </Project>

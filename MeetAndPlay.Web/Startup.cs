@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CurrieTechnologies.Razor.SweetAlert2;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services;
 using MeetAndPlay.Core.Services.FilesService;

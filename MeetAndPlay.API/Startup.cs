@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services.FilesService;
 using MeetAndPlay.Core.Services.GamesService;
@@ -54,6 +55,8 @@ namespace MeetAndPlay.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+            
             app.UseRouting();
 
             app.UseAuthorization();
