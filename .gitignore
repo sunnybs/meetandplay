@@ -34,4 +34,4 @@ Desktop.ini
 .DS_Store
 
 SeedController.cs
-uploads/*
+MeetAndPlay.API/wwwroot/uploads/*
