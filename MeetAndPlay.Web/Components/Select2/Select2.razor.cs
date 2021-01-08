@@ -78,6 +78,9 @@ namespace MeetAndPlay.Web.Components.Select2
         
         [Parameter] public HashSet<TItem> Values { get; set; }
 
+        //TODO: Отрефакторить
+        [Parameter] public HashSet<TItem> InitialValues { get; set; }
+        
         [Parameter] public EventCallback<HashSet<TItem>> ValuesChanged { get; set; }
 
         protected Dictionary<string, TItem> InternallyMappedData { get; set; } = new();
@@ -160,7 +163,7 @@ namespace MeetAndPlay.Web.Components.Select2
                 GivenEditContext.OnValidationStateChanged += _validationStateChangedHandler;
 
             GetPagedData ??= GetStaticData;
-
+            
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
         }
@@ -182,6 +185,11 @@ namespace MeetAndPlay.Web.Components.Select2
                 await JSRuntime.InvokeVoidAsync("select2Blazor.init",
                     Id, _elementRef, options, "select2Blazor_GetData");
 
+                if (InitialValues != null && InitialValues.Any())
+                {
+                    CurrentValues = InitialValues;
+                }
+                
                 if (CurrentValues != null)
                     await SelectItems(CurrentValues);
 

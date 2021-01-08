@@ -21,12 +21,5 @@ namespace MeetAndPlay.Core.Infrastructure.Extensions
             return await query.SingleOrDefaultAsync(entity => entity.Name == name);
         }
 
-        public static async Task UpdateRelatedEntitiesAsync<TEntity>
-            (this DbContext context, IEnumerable<TEntity> newValues, IEnumerable<TEntity> oldValues)
-            where TEntity : class
-        {
-            context.Set<TEntity>().RemoveRange(oldValues);
-            await context.Set<TEntity>().AddRangeAsync(newValues);
-        }
     }
 }

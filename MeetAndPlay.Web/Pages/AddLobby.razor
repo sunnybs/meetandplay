@@ -2,25 +2,17 @@
 @page "/AddLobby"
 @using MeetAndPlay.Core.Infrastructure.Extensions
 @using MeetAndPlay.Data.Enums
-@using MeetAndPlay.Core.Abstraction.Services
-@using AutoMapper
-@using CurrieTechnologies.Razor.SweetAlert2
 @using MeetAndPlay.Data.Models.Games
-@using MeetAndPlay.Data.Models.Offers
-@using MeetAndPlay.Web.ViewModels
+@inherits AddLobbyComponent
 @attribute [Authorize]
-@inject ILobbyService LobbyService
-@inject IGamesService GamesService
-@inject IMapper Mapper
-@inject SweetAlertService Swal
 
 <div class="my-4">
     <h3>@PageName</h3>
 </div>
-<EditForm Model="@_lobbyModel" OnSubmit="@SubmitAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    
+<EditForm Model="@LobbyModel" OnSubmit="@SubmitAsync">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
     <div class="form-group">
         <label>
             Выберите игры
@@ -30,14 +22,15 @@
                  IsMultiple="@true"
                  TextExpression="@(item => item.Name)"
                  Source="@GamesService"
-                 @bind-Values="@_lobbyModel.Games">
+                 InitialValues="@LobbyModel.Games"
+                 @bind-Values="@LobbyModel.Games">
         </Select2>
     </div>
     <div class="form-group">
         <label>
             Выберите уровень игры <small>необязательно</small>
         </label>
-        <select class="form-control" @bind="@_lobbyModel.GameLevel">
+        <select class="form-control" @bind="@LobbyModel.GameLevel">
             @foreach (GameLevel value in Enum.GetValues(typeof(GameLevel)))
             {
                 <option value="@value">@value.GetDescription()</option>
@@ -48,26 +41,26 @@
         <label>
             Какое необходимое количество участников для игры?
         </label>
-        <input type="number" class="form-control" @bind=@_lobbyModel.MaxPlayersCount placeholder="Введите количество человек">
+        <input type="number" class="form-control" @bind="@LobbyModel.MaxPlayersCount" placeholder="Введите количество человек">
     </div>
     <div class="form-group">
         <label>
             Сколько вас уже человек? <small>необязательно</small>
         </label>
-        <input type="number" class="form-control" @bind=@_lobbyModel.CurrentPlayersCount placeholder="Введите количество человек">
+        <input type="number" class="form-control" @bind="@LobbyModel.CurrentPlayersCount" placeholder="Введите количество человек">
     </div>
     <div class="form-group">
         <label>
             Когда вы планируете поиграть?
         </label>
-        <RadzenDatePicker @bind-Value=@_lobbyModel.PlannedGameDate DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+        <RadzenDatePicker @bind-Value="@LobbyModel.PlannedGameDate" DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
     </div>
 
     <div class="form-group">
         <label>
             Где бы вы хотели поиграть? <small>необязательно</small>
         </label>
-        <select class="form-control" @bind="@_lobbyModel.PlaceType">
+        <select class="form-control" @bind="@LobbyModel.PlaceType">
             @foreach (PlaceType value in Enum.GetValues(typeof(PlaceType)))
             {
                 <option value="@value">@value.GetDescription()</option>
@@ -79,85 +72,22 @@
         <label>
             Ваши пожелания <small>необязательно</small>
         </label>
-        <textarea class="form-control" @bind=@_lobbyModel.Description rows="3"></textarea>
+        <textarea class="form-control" @bind="@LobbyModel.Description" rows="3"></textarea>
     </div>
     <div class="form-group">
         <label>
             Название встречи <small>необязательно</small>
         </label>
-        <input type="text" class="form-control" @bind=@_lobbyModel.Title>
+        <input type="text" class="form-control" @bind="@LobbyModel.Title">
     </div>
+
+    <ImageInput
+        Label="Выберите постер"
+        ResultImages="@LobbyModel.Poster"
+        ResultCompressedImages="@LobbyModel.CompressedPoster"
+        InitialValues="@LobbyInitialImage"/>
 
     <div class="form-group">
         <button class="btn btn-warning bg-lightyellow" type="submit">@SubmitName</button>
     </div>
 </EditForm>
-
-
-
-
-@code {
-
-    [Parameter]
-    public string Id { get; set; }
-
-    private bool IsUpdating => Id != null;
-    private string PageName => IsUpdating ? "Обновить лобби" : "Создать лобби";
-    private string SubmitName => IsUpdating ? "Обновить" : "Создать";
-
-    private AddLobbyViewModel _lobbyModel = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (Id != null && Guid.TryParse(Id, out var parsedId))
-        {
-            var lobby = await LobbyService.GetLobbyByIdAsync(parsedId);
-            _lobbyModel = Mapper.Map<AddLobbyViewModel>(lobby);
-        }
-    }
-
-    private async Task SubmitAsync()
-    {
-        if (IsUpdating)
-        {
-            await UpdateAsync();
-        }
-        else
-        {
-            await AddAsync();
-        }
-    }
-    
-    private async Task AddAsync()
-    {
-        var lobby = Mapper.Map<Lobby>(_lobbyModel);
-        lobby.LobbyGames = _lobbyModel.Games.Select(g => new LobbyGame {GameId = g.Id}).ToArray();
-        try
-        {
-            await LobbyService.AddLobbyAsync(lobby);
-            await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
-        }
-        catch (Exception e)
-        {
-            await Swal.FireAsync("Что-то пошло не так :(", e.Message, SweetAlertIcon.Error);
-        }
-    }
-    
-    private async Task UpdateAsync()
-    {
-        var parsedId = Guid.Parse(Id);
-        var lobby = Mapper.Map<Lobby>(_lobbyModel);
-        lobby.Id = parsedId;
-        lobby.LobbyGames = _lobbyModel.Games.Select(g => new LobbyGame {LobbyId = parsedId, GameId = g.Id}).ToArray();
-        
-        try
-        {
-            await LobbyService.UpdateLobbyAsync(lobby);
-            await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
-        }
-        catch (Exception e)
-        {
-            await Swal.FireAsync("Что-то пошло не так :(", e.Message, SweetAlertIcon.Error);
-        }
-    }
-}

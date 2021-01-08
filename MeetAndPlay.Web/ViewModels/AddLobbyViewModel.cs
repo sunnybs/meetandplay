@@ -24,6 +24,9 @@ namespace MeetAndPlay.Web.ViewModels
         public int CurrentPlayersCount { get; set; }
         public PlaceType PlaceType { get; set; }
         public GameLevel GameLevel { get; set; }
+
+        public IList<FileViewModel> Poster { get; set; }
+        public IList<FileViewModel> CompressedPoster { get; set; }
         public HashSet<Game> Games { get; set; } = new ();
         public HashSet<User> CurrentPlayers { get; set; } = new ();
     }

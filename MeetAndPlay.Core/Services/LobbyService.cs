@@ -11,6 +11,7 @@ using MeetAndPlay.Data.DTO;
 using MeetAndPlay.Data.DTO.OfferAggregator;
 using MeetAndPlay.Data.DTO.ReadFilters;
 using MeetAndPlay.Data.Enums;
+using MeetAndPlay.Data.Models.Files;
 using MeetAndPlay.Data.Models.Offers;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,15 +58,18 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Lobby> GetLobbyByIdAsync(Guid id)
         {
+            _mnpContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             var lobby = await _mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
                 .Include(l => l.LobbyImages)
                 .ThenInclude(i => i.File)
+                .Include(l => l.LobbyImages)
+                .ThenInclude(i => i.CompressedFile)
                 .Include(l => l.LobbyPlayers)
                 .ThenInclude(p => p.Player)
+                .AsNoTracking()
                 .FindByIdAsync(id);
-
             if (lobby == null)
                 throw new NotFoundException($"Lobby with {id} not found");
 
@@ -88,21 +92,39 @@ namespace MeetAndPlay.Core.Services
         public async Task<Guid> UpdateLobbyAsync(Lobby lobby)
         {
             var oldLobby = await _mnpContext.Lobbies
-                .Include(l => l.LobbyGames)
                 .Include(l => l.LobbyPlayers)
+                .ThenInclude(lp => lp.Player)
                 .AsNoTracking()
                 .FindByIdAsync(lobby.Id);
-
             if (oldLobby == null)
                 throw new NotFoundException($"Lobby with {lobby.Id} not found");
-
-            await EnsureCurrentUserHasAccessToWriteAsync(lobby);
+            
             lobby.LobbyPlayers = oldLobby.LobbyPlayers;
+            await EnsureCurrentUserHasAccessToWriteAsync(lobby);
+
+            var lobbyGames = lobby.LobbyGames;
+            lobby.LobbyGames = null;
             _mnpContext.Update(lobby);
-            await _mnpContext.UpdateRelatedEntitiesAsync(lobby.LobbyGames, oldLobby.LobbyGames);
+
+            var oldLobbyGames = _mnpContext.LobbyGames
+                .Where(lg => lg.LobbyId == lobby.Id);
+            _mnpContext.RemoveRange(oldLobbyGames);
+            await _mnpContext.AddRangeAsync(lobbyGames);
 
             await _mnpContext.SaveChangesAsync();
             return lobby.Id;
+        }
+
+        public async Task UpdateLobbyImagesAsync(Guid lobbyId, LobbyImage[] newLobbyImages)
+        {
+            var oldImages = _mnpContext.LobbyImages.Where(i => i.LobbyId == lobbyId);
+            foreach (var newLobbyImage in newLobbyImages)
+            {
+                newLobbyImage.LobbyId = lobbyId;
+            }
+            _mnpContext.LobbyImages.RemoveRange(oldImages);
+            await _mnpContext.LobbyImages.AddRangeAsync(newLobbyImages);
+            await _mnpContext.SaveChangesAsync();
         }
 
         public async Task AddJoiningRequestAsync(LobbyJoiningRequest lobbyJoiningRequest)

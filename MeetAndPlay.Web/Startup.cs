@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CurrieTechnologies.Razor.SweetAlert2;
+using IdentityServer4;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
@@ -59,6 +60,14 @@ namespace MeetAndPlay.Web
             var authSection = Configuration.GetSection("Auth");
             var authOptions = Configuration.GetSection("Auth").Get<Auth>();
             services.Configure<Auth>(authSection);
+
+            var apiSection = Configuration.GetSection("ApiInfo");
+            var apiInfo = apiSection.Get<ApiInfo>();
+            services.Configure<ApiInfo>(apiSection);
+            services.AddHttpClient<IApiClient, ApiClient>(configureClient =>
+            {
+                configureClient.BaseAddress = new Uri(apiInfo.Address);
+            });
             
             services.AddAuthentication(options =>
                 {
@@ -88,6 +97,7 @@ namespace MeetAndPlay.Web
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGamesService, GamesService>();
             services.AddScoped<IFilesService, FilesService>();
+            services.AddScoped<FileViewModelsService>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();

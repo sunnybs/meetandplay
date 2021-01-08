@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services.FileService;
+using MeetAndPlay.Data.DTO.Files;
 using MeetAndPlay.Data.Models.Files;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace MeetAndPlay.API.Controllers
             _filesService = filesService;
         }
 
+        [DisableRequestSizeLimit]
         [HttpPost("UploadForm")]
         public async Task<File> UploadFile(IFormFile file)
         {
@@ -24,11 +26,12 @@ namespace MeetAndPlay.API.Controllers
             return result;
         }
         
+        [DisableRequestSizeLimit]
         [HttpPost("UploadBase64")]
-        public async Task<File> UploadFile(string base64Source, string filename)
+        public async Task<File> UploadFile([FromBody]Base64UploadRequest uploadRequest)
         {
-            var fileInfo = new FileInfo {Filename = filename};
-            var result = await _filesService.UploadFileAsync(base64Source, fileInfo);
+            var fileInfo = new FileInfo {Filename = uploadRequest.Filename};
+            var result = await _filesService.UploadFileAsync(uploadRequest.Base64Source, fileInfo);
             return result;
         }
 

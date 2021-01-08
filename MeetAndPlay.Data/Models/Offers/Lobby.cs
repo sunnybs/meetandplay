@@ -20,9 +20,9 @@ namespace MeetAndPlay.Data.Models.Offers
         public PlaceType PlaceType { get; set; }
         public GameLevel GameLevel { get; set; }
         
-        public ICollection<LobbyGame> LobbyGames { get; set; }
-        public ICollection<LobbyImage> LobbyImages { get; set; }
-        public ICollection<LobbyPlayer> LobbyPlayers { get; set; }
-        public ICollection<LobbyJoiningRequest> LobbyJoiningRequests { get; set; }
+        public List<LobbyGame> LobbyGames { get; set; }
+        public List<LobbyImage> LobbyImages { get; set; }
+        public List<LobbyPlayer> LobbyPlayers { get; set; }
+        public List<LobbyJoiningRequest> LobbyJoiningRequests { get; set; }
     }
 }

@@ -1,0 +1,29 @@
+@inherits ImageInputComponent
+
+<div class="my-4">
+    <div>
+        <label>@Label</label>
+    </div>
+    <div class="border p-4">
+        <div class="mb-2">
+            <InputFile OnChange="@OnInputFileChange" AdditionalAttributes="@InputAttributes"/>
+        </div>
+        <div>
+            @if (ResultCompressedImages?.Count > 0)
+            {
+                <label>Изображения</label>
+                <div class="d-flex flex-row">
+                    @foreach (var compressedImage in ResultCompressedImages)
+                    {
+                        <div class="p-2 mx-2 border rounded">
+                            <img src="@compressedImage.FileLink" style="max-width: 200px; max-height: 200px;" alt="Изображение"/>
+                            <button type="button" @onclick="@(() => DeleteImage(compressedImage))" class="btn btn-outline-danger border-0"><small>Удалить</small></button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+    </div>
+
+</div>
