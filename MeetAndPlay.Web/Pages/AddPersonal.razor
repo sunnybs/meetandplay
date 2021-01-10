@@ -1,0 +1,63 @@
+@page "/AddPersonal/{Id}"
+@page "/AddPersonal"
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Data.Models.Games
+@inherits AddPersonalComponent
+@attribute [Authorize]
+
+<div class="my-4">
+    <h3>@PageName</h3>
+</div>
+<EditForm Model="@UserOfferModel" OnSubmit="@SubmitAsync">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="form-group">
+        <label>
+            Выберите игры
+        </label>
+        <Select2 TItem="Game"
+                 Id="games-select"
+                 IsMultiple="@true"
+                 TextExpression="@(item => item.Name)"
+                 Source="@GamesService"
+                 InitialValues="@UserOfferModel.Games"
+                 @bind-Values="@UserOfferModel.Games">
+        </Select2>
+    </div>
+    <div class="form-group">
+        <label>
+            Выберите уровень игры <small>необязательно</small>
+        </label>
+        <select class="form-control" @bind="@UserOfferModel.GameLevel">
+            @foreach (GameLevel value in Enum.GetValues(typeof(GameLevel)))
+            {
+                <option value="@value">@value.GetDescription()</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Где бы вы хотели поиграть? <small>необязательно</small>
+        </label>
+        <select class="form-control" @bind="@UserOfferModel.PlaceType">
+            @foreach (PlaceType value in Enum.GetValues(typeof(PlaceType)))
+            {
+                <option value="@value">@value.GetDescription()</option>
+            }
+        </select>
+    </div>
+    <PeriodSelector @bind-Value="@UserOfferModel.PeriodViewModel"/>
+    <div class="form-group">
+        <label>
+            Ваши пожелания <small>необязательно</small>
+        </label>
+        <textarea class="form-control" @bind="@UserOfferModel.Description" rows="3"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <button class="btn btn-warning bg-lightyellow" type="submit">@SubmitName</button>
+    </div>
+</EditForm>

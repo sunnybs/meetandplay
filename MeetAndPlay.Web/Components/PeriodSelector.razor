@@ -1,0 +1,154 @@
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Web.ViewModels
+@using System
+
+<div class="my-4">
+    <label>Когда Вам было бы удобно играть?</label>
+    <div class="form-group row">
+        <div class="col-md">
+            <button @onclick="@SetEverydayContainerActive" type="button" class="@EverydayButtonClasses">Время найдётся всегда!</button>
+        </div>
+        <div class="col-md">
+            <button @onclick="@SetPeriodContainerActive" type="button" class="@PeriodButtonClasses">Было бы удобно в определённое время...</button>
+        </div>
+        <div class="col-md">
+            <button @onclick="@SetDateContainerActive" type="button" class="@DateButtonClasses">Ищу игру на конкретную дату</button>
+        </div>
+    </div>
+
+    <div class="@PeriodContainerClasses">
+        <div class="form-group">
+            <label>Выберите дни недели</label>
+            
+            <Select2 TItem="string"
+                     Id="week-select"
+                     IsMultiple="@true"
+                     Data="@WeekDays"
+                     TextExpression="@(v => v)"
+                     InitialValues="@Value.Days"
+                     @bind-Values="@Value.Days">
+            </Select2>
+             
+        </div>
+
+
+        <div class="form-group">
+            <label>Выберите время</label>
+            <div>
+                <label>C</label>
+                <RadzenDatePicker @bind-Value="@Value.HoursFrom" TValue="DateTime?" ShowTime="true" TimeOnly="true" DateFormat="HH:mm"/>
+            </div>
+            <div>
+                <label>По</label>
+                <RadzenDatePicker @bind-Value="@Value.HoursTo" TValue="DateTime?" ShowTime="true" TimeOnly="true" DateFormat="HH:mm"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="@DateContainerClasses">
+        <div class="form-group">
+            <label>Выберите дату</label>
+            <RadzenDatePicker @bind-Value="@Value.ActualTime" TValue="DateTime?" ShowTime="true" DateFormat="MM/dd/yyyy h:mm tt"/>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public PeriodViewModel Value { get; set; } = new();
+
+        private const string NotSelectedClasses = "btn btn-outline-secondary border-0";
+        private const string SelectedClasses = "btn btn-warning bg-lightyellow border-0";
+        private const string ContainerActiveClasses = "my-4";
+        private const string ContainerNotActiveClasses = "my-4 d-none";
+
+    [Parameter]
+    public EventCallback<PeriodViewModel> ValueChanged { get; set; }
+
+    protected string[] WeekDays = Enum.GetValues<WeekDays>().Select(v => v.GetDescription()).ToArray();
+
+    protected string EverydayButtonClasses = NotSelectedClasses;
+    protected string PeriodButtonClasses = NotSelectedClasses;
+    protected string DateButtonClasses = NotSelectedClasses;
+    protected string PeriodContainerClasses = ContainerNotActiveClasses;
+    protected string DateContainerClasses = ContainerNotActiveClasses;
+
+    protected override void OnInitialized()
+    {
+        if (Value != null)
+        {
+            SetInitialClasses();
+        }
+    }
+
+    private void SetInitialClasses()
+    {
+        if (Value.IsEveryday)
+            SetEverydayActiveClasses();
+        else if (Value.HasActualTime)
+            SetDateActiveClasses();
+        else if (Value.IsDayOfWeek)
+            SetPeriodActiveClasses();
+        else
+            SetDefaultClasses();
+    }
+
+    private void SetEverydayActiveClasses()
+    {
+        EverydayButtonClasses = SelectedClasses;
+    }
+
+    private void SetPeriodActiveClasses()
+    {
+        PeriodButtonClasses = SelectedClasses;
+        PeriodContainerClasses = ContainerActiveClasses;
+    }
+
+    private void SetDateActiveClasses()
+    {
+        DateButtonClasses = SelectedClasses;
+        DateContainerClasses = ContainerActiveClasses;
+    }
+
+    private void SetDefaultClasses()
+    {
+        EverydayButtonClasses = NotSelectedClasses;
+        PeriodButtonClasses = NotSelectedClasses;
+        DateButtonClasses = NotSelectedClasses;
+        PeriodContainerClasses = ContainerNotActiveClasses;
+        DateContainerClasses = ContainerNotActiveClasses;
+    }
+
+    protected async Task SetPeriodContainerActive()
+    {
+        SetDefaultClasses();
+        SetPeriodActiveClasses();
+        Value.IsDayOfWeek = true;
+        Value.HasActualTime = false;
+        Value.IsEveryday = false;
+        StateHasChanged();
+    }
+
+    protected async Task SetDateContainerActive()
+    {
+        SetDefaultClasses();
+        SetDateActiveClasses();
+        Value.IsDayOfWeek = false;
+        Value.HasActualTime = true;
+        Value.IsEveryday = false;
+        StateHasChanged();
+    }
+
+    protected async Task SetEverydayContainerActive()
+    {
+        SetDefaultClasses();
+        SetEverydayActiveClasses();
+        Value.IsDayOfWeek = false;
+        Value.HasActualTime = false;
+        Value.IsEveryday = true;
+        StateHasChanged();
+    }
+
+}

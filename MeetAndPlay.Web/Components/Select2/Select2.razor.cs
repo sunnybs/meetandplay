@@ -64,9 +64,9 @@ namespace MeetAndPlay.Web.Components.Select2
             }
         }
 
-        [Parameter] public TItem[] Data { get; set; }
+        [Parameter] public IReadOnlyList<TItem> Data { get; set; }
 
-        [Parameter] public Func<Select2QueryData, Task<TItem[]>> GetPagedData { get; set; }
+        [Parameter] public Func<Select2QueryData, Task<IReadOnlyList<TItem>>> GetPagedData { get; set; }
 
         [Parameter] public Func<TItem, string> OptionTemplate { get; set; }
 
@@ -185,6 +185,7 @@ namespace MeetAndPlay.Web.Components.Select2
                 await JSRuntime.InvokeVoidAsync("select2Blazor.init",
                     Id, _elementRef, options, "select2Blazor_GetData");
 
+                //TODO: Fix 
                 if (InitialValues != null && InitialValues.Any())
                 {
                     CurrentValues = InitialValues;
@@ -199,10 +200,10 @@ namespace MeetAndPlay.Web.Components.Select2
             }
         }
 
-        private Task<TItem[]> GetStaticData(Select2QueryData query)
+        private Task<IReadOnlyList<TItem>> GetStaticData(Select2QueryData query)
         {
             if (query.Page != 1)
-                return Task.FromResult(default(TItem[]));
+                return Task.FromResult(default(IReadOnlyList<TItem>));
 
             var data = Data;
             var searchTerm = query.Term;
@@ -258,7 +259,7 @@ namespace MeetAndPlay.Web.Components.Select2
                 response.Results.Add(mappedItem);
             }
 
-            response.Pagination.More = data.Length == queryParams.Data.Size;
+            response.Pagination.More = data.Count == queryParams.Data.Size;
 
             return JsonSerializer.Serialize(response, _jsonSerializerOptions);
         }

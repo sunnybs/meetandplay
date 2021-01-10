@@ -58,7 +58,6 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Lobby> GetLobbyByIdAsync(Guid id)
         {
-            _mnpContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             var lobby = await _mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)

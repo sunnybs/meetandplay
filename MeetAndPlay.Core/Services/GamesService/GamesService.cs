@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -54,9 +55,9 @@ namespace MeetAndPlay.Core.Services.GamesService
             return await _mnpContext.Games.FindByIdAsync(id);
         }
 
-        public async Task<Game[]> GetAsync(ReadFilter filter)
+        public async Task<IReadOnlyList<Game>> GetAsync(ReadFilter filter)
         {
-            var games = _mnpContext.Games.AsQueryable();
+            var games = _mnpContext.Games.AsNoTracking().AsQueryable();
             games = FilterGames(filter, games);
 
             if (filter.PageSize.HasValue && filter.PageNumber.HasValue)
@@ -80,7 +81,7 @@ namespace MeetAndPlay.Core.Services.GamesService
 
         public async Task<CountArray<Game>> GetAsyncAsCountArray(ReadFilter filter)
         {
-            var games = _mnpContext.Games.AsQueryable();
+            var games = _mnpContext.Games.AsNoTracking().AsQueryable();
             games = FilterGames(filter, games);
             var count = await games.CountAsync();
             
