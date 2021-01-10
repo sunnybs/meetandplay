@@ -5,14 +5,14 @@
 
 <div class="my-4">
     <label>Когда Вам было бы удобно играть?</label>
-    <div class="form-group row">
-        <div class="col-md">
+    <div class="form-group row text-center">
+        <div class="col-md p-2">
             <button @onclick="@SetEverydayContainerActive" type="button" class="@EverydayButtonClasses">Время найдётся всегда!</button>
         </div>
-        <div class="col-md">
+        <div class="col-md p-2">
             <button @onclick="@SetPeriodContainerActive" type="button" class="@PeriodButtonClasses">Было бы удобно в определённое время...</button>
         </div>
-        <div class="col-md">
+        <div class="col-md p-2">
             <button @onclick="@SetDateContainerActive" type="button" class="@DateButtonClasses">Ищу игру на конкретную дату</button>
         </div>
     </div>
