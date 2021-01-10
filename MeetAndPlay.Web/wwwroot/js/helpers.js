@@ -6,6 +6,10 @@ function showModal(element){
     $(element).modal("show");
 }
 
+function closeModal(element){
+    $(element).modal("hide");
+}
+
 function addClass(element, className) {
     console.log(element);
     element.classList.add(className);

@@ -1,0 +1,24 @@
+@page "/Profile/Edit"
+@inherits EditProfileComponent
+
+<h3>Тут вы можете заполнить более подробную информацию о себе</h3>
+
+<EditForm Model="@ProfileViewModel">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="form-group my-4">
+        <label>Расскажите немного о себе:</label>
+        <textarea rows="6" class="form-control" @bind="@ProfileViewModel.About" placeholder="Можете оставить тут свои контакты..."></textarea>
+    </div>
+
+    <ImageInput
+        Label="Выберите аватар"
+        ResultImages="@ProfileViewModel.Avatar"
+        ResultCompressedImages="@ProfileViewModel.CompressedAvatar"
+        InitialValues="@AvatarInitialImage"/>
+    
+    <div class="form-group">
+            <button class="btn btn-warning bg-lightyellow" type="submit">Сохранить</button>
+        </div>
+</EditForm>
