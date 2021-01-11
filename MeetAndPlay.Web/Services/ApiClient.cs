@@ -32,5 +32,21 @@ namespace MeetAndPlay.Web.Services
             var file = await response.ReadAsync<File>();
             return file;
         }
+
+        public async Task<string> GetRandomLobbyPictureLinkAsync()
+        {
+            
+            return await _client.GetStringAsync("/Files/Lobbies/RandomPicture");
+        }
+
+        public async Task<string> GetRandomPlayerPictureLinkAsync()
+        {
+            return await _client.GetStringAsync("/Files/Players/RandomPicture");
+        }
+
+        public async Task<string> GetRandomOfferPictureLinkAsync()
+        {
+            return await _client.GetStringAsync("/Files/Offers/RandomPicture");
+        }
     }
 }

@@ -55,7 +55,7 @@ namespace MeetAndPlay.Web
                 options.Theme = SweetAlertTheme.Bootstrap4;
             });
 
-            services.AddDbContext<MNPContext>(ConfigureDbContext);
+            services.AddDbContext<MNPContext>(ConfigureDbContext, ServiceLifetime.Transient);
             
             var authSection = Configuration.GetSection("Auth");
             var authOptions = Configuration.GetSection("Auth").Get<Auth>();
@@ -109,6 +109,7 @@ namespace MeetAndPlay.Web
 
         private void ConfigureDbContext(DbContextOptionsBuilder options)
         {
+            options.EnableSensitiveDataLogging();
             options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
                 sql => sql.MigrationsAssembly(Data.Consts.Infrastructure.MigrationAssembly));
         }

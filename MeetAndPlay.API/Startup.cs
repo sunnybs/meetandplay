@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
+using MeetAndPlay.Core.Services;
 using MeetAndPlay.Core.Services.FilesService;
 using MeetAndPlay.Core.Services.GamesService;
 using Microsoft.AspNetCore.Builder;
@@ -35,6 +36,9 @@ namespace MeetAndPlay.API
             services.AddDbContext<MNPContext>(ConfigureDbContext);
             services.AddScoped<IGamesService, GamesService>();
             services.AddScoped<IFilesService, FilesService>();
+            services.AddScoped<IPictureRandomizer, PictureRandomizer>();
+
+            services.AddHttpContextAccessor();
             
             services.AddControllers();
             services.AddSwaggerGen(c =>

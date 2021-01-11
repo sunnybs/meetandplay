@@ -58,6 +58,7 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Lobby> GetLobbyByIdAsync(Guid id)
         {
+            _mnpContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             var lobby = await _mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
@@ -67,11 +68,11 @@ namespace MeetAndPlay.Core.Services
                 .ThenInclude(i => i.CompressedFile)
                 .Include(l => l.LobbyPlayers)
                 .ThenInclude(p => p.Player)
-                .AsNoTracking()
                 .FindByIdAsync(id);
+            
+            _mnpContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
             if (lobby == null)
                 throw new NotFoundException($"Lobby with {id} not found");
-
             return lobby;
         }
         
@@ -90,10 +91,9 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Guid> UpdateLobbyAsync(Lobby lobby)
         {
-            var oldLobby = await _mnpContext.Lobbies
+            var oldLobby = await _mnpContext.Lobbies.AsNoTracking()
                 .Include(l => l.LobbyPlayers)
-                .ThenInclude(lp => lp.Player)
-                .AsNoTracking()
+                .ThenInclude(lp => lp.Player).AsNoTracking()
                 .FindByIdAsync(lobby.Id);
             if (oldLobby == null)
                 throw new NotFoundException($"Lobby with {lobby.Id} not found");
@@ -103,6 +103,7 @@ namespace MeetAndPlay.Core.Services
 
             var lobbyGames = lobby.LobbyGames;
             lobby.LobbyGames = null;
+            
             _mnpContext.Update(lobby);
 
             var oldLobbyGames = _mnpContext.LobbyGames

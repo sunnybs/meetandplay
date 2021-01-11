@@ -25,6 +25,7 @@ namespace MeetAndPlay.Web.Pages
         [Inject] protected SweetAlertService Swal { get; set; }
         [Inject] protected IApiClient ApiClient { get; set; }
         [Inject] private ILogger<AddLobby> Logger { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
 
         protected bool IsUpdating => Id != null;
         protected string PageName => IsUpdating ? "Обновить лобби" : "Создать лобби";
@@ -62,6 +63,7 @@ namespace MeetAndPlay.Web.Pages
                 var lobbyId = await LobbyService.AddLobbyAsync(lobby);
                 await UpdatePosterAsync(lobbyId);
                 await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
+                NavigationManager.NavigateTo($"/Lobby/{lobbyId}");
             }
             catch (Exception e)
             {
@@ -83,6 +85,7 @@ namespace MeetAndPlay.Web.Pages
                 var lobbyId = await LobbyService.UpdateLobbyAsync(lobby);
                 await UpdatePosterAsync(lobbyId);
                 await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
+                NavigationManager.NavigateTo($"/Lobby/{lobbyId}");
             }
             catch (Exception e)
             {

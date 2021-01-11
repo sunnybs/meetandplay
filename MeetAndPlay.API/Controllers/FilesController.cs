@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Data.DTO.Files;
 using MeetAndPlay.Data.Models.Files;
@@ -12,10 +13,12 @@ namespace MeetAndPlay.API.Controllers
     public class FilesController : ControllerBase
     {
         private readonly IFilesService _filesService;
+        private readonly IPictureRandomizer _pictureRandomizer;
 
-        public FilesController(IFilesService filesService)
+        public FilesController(IFilesService filesService, IPictureRandomizer pictureRandomizer)
         {
             _filesService = filesService;
+            _pictureRandomizer = pictureRandomizer;
         }
 
         [DisableRequestSizeLimit]
@@ -46,6 +49,24 @@ namespace MeetAndPlay.API.Controllers
             var fileStream = _filesService.GetFileStream(fileHash);
             var fileMimeType = await _filesService.GetFileMimeTypeAsync(fileHash);
             return File(fileStream, fileMimeType);
+        }
+
+        [HttpGet("Lobbies/RandomPicture")]
+        public string GetRandomLobbyPicture()
+        {
+            return _pictureRandomizer.GetRandomLobbyPictureLink();
+        }
+        
+        [HttpGet("Offers/RandomPicture")]
+        public string GetRandomOfferPicture()
+        {
+            return _pictureRandomizer.GetRandomOfferPictureLink();
+        }
+        
+        [HttpGet("Players/RandomPicture")]
+        public string GetPlayersOfferPicture()
+        {
+            return _pictureRandomizer.GetRandomPlayerPictureLink();
         }
     }
 }

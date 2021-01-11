@@ -23,6 +23,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="wwwroot\images\lobbies" />
+      <Folder Include="wwwroot\images\offers" />
+      <Folder Include="wwwroot\images\players" />
       <Folder Include="wwwroot\uploads" />
     </ItemGroup>
 
