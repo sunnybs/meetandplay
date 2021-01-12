@@ -8,8 +8,4 @@
       <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.0.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="DTO\Lobies" />
-    </ItemGroup>
-
 </Project>
