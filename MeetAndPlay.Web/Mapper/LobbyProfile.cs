@@ -11,6 +11,7 @@ namespace MeetAndPlay.Web.Mapper
         {
             CreateMap<Lobby, AddLobbyViewModel>().ReverseMap();
             CreateMap<File, FileViewModel>().ReverseMap();
+            CreateMap<UserOffer, AddPersonalViewModel>().ReverseMap();
         }
     }
 }

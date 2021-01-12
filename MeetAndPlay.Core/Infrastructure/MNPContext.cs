@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using MeetAndPlay.Data.Models.Files;
 using MeetAndPlay.Data.Models.Games;
 using MeetAndPlay.Data.Models.Offers;
@@ -96,6 +97,12 @@ namespace MeetAndPlay.Core.Infrastructure
             {
                 entityEntry.State = EntityState.Detached;
             }
+        }
+
+        public async Task SaveAndDetachAsync()
+        {
+            await SaveChangesAsync();
+            DetachAll();
         }
     }
 }

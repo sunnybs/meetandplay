@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using MeetAndPlay.Data.Enums;
+using MeetAndPlay.Data.Models.Places;
 using MeetAndPlay.Data.Models.Users;
 
 namespace MeetAndPlay.Data.Models.Offers
@@ -13,6 +15,7 @@ namespace MeetAndPlay.Data.Models.Offers
         public virtual User Author { get; set; }
         public string Description { get; set; }
         public DateTime CreationDate { get; set; }
+        public PlaceType PlaceType { get; set; }
         public bool IsConstantSearching { get; set; }
 
         /// <summary>

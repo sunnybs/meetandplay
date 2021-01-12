@@ -84,7 +84,7 @@ namespace MeetAndPlay.Web.Components.Category
             return OfferType switch
             {
                 OfferType.Personal => item.Title,
-                OfferType.Lobby => item.Title ?? "Поиск компании",
+                OfferType.Lobby => item.Title ?? "Хотим поиграть",
                 OfferType.Place => item.Title,
                 OfferType.Event => item.Title,
                 _ => throw new ArgumentOutOfRangeException()

@@ -72,7 +72,9 @@ namespace MeetAndPlay.Core.Services
 
                 var lobbyGames = lobby.LobbyGames;
                 lobby.LobbyGames = null;
-
+                lobby.CreationDate = oldLobby.CreationDate;
+                lobby.IsActive = oldLobby.IsActive;
+                
                 _mnpContext.Update(lobby);
 
                 var oldLobbyGames = _mnpContext.LobbyGames

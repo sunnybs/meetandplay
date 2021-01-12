@@ -37,6 +37,7 @@ namespace MeetAndPlay.Core.Services
             var login = _userAuthentication.GetCurrentUserName();
             var userId = await _mnpContext.Users
                 .Where(u => u.UserName.ToLower() == login.ToLower())
+                .AsNoTracking()
                 .Select(u => u.Id)
                 .SingleAsync();
 

@@ -52,7 +52,7 @@ namespace MeetAndPlay.Core.Services.GamesService
 
         public async Task<Game> GetByIdAsync(Guid id)
         {
-            return await _mnpContext.Games.FindByIdAsync(id);
+            return await _mnpContext.Games.AsNoTracking().FindByIdAsync(id);
         }
 
         public async Task<IReadOnlyList<Game>> GetAsync(ReadFilter filter)
@@ -65,7 +65,7 @@ namespace MeetAndPlay.Core.Services.GamesService
                 games = games.TakePage(filter.PageSize.Value, filter.PageNumber.Value);
             }
 
-            return await games.ToArrayAsync();
+            return await games.AsNoTracking().ToArrayAsync();
         }
 
         private static IQueryable<Game> FilterGames(ReadFilter filter, IQueryable<Game> games)
@@ -81,7 +81,7 @@ namespace MeetAndPlay.Core.Services.GamesService
 
         public async Task<CountArray<Game>> GetAsyncAsCountArray(ReadFilter filter)
         {
-            var games = _mnpContext.Games.AsNoTracking().AsQueryable();
+            var games = _mnpContext.Games.AsQueryable();
             games = FilterGames(filter, games);
             var count = await games.CountAsync();
             
@@ -90,7 +90,7 @@ namespace MeetAndPlay.Core.Services.GamesService
                 games = games.TakePage(filter.PageSize.Value, filter.PageNumber.Value);
             }
 
-            var resultGames = await games.ToArrayAsync();
+            var resultGames = await games.AsNoTracking().ToArrayAsync();
             
             return new CountArray<Game>(resultGames, count);
         }
