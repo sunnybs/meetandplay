@@ -1,6 +1,7 @@
 @using MeetAndPlay.Core.Infrastructure.Extensions
 @inherits CategoryComponent
 @page "/category/{offerTypeName}"
+@inject NavigationManager NavigationManager
 
 <div class="d-flex">
     <div class="mr-auto text-center">
@@ -11,12 +12,12 @@
     </div>
     @foreach (var category in OtherCategories)
     {
-        <a class="mx-3 mt-2 text-center" href="@category.Link">
+        <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect(category.Link))>
             <div>
                 <img class="mx-auto" style="max-width: 30px;" src="@category.PosterUrl" alt="">
             </div>
             <b>@category.Name</b>
-        </a>
+        </button>
     }
 </div>
 <Search Placeholder="Во что вы хотите поиграть?"></Search>
@@ -24,4 +25,13 @@
     <Filter OfferTypeName="@OfferTypeName"/>
     <Browser OfferTypeName="@OfferTypeName" OfferAggregator="@OfferAggregator"/>
 </CascadingValue>
+
+@code {
+
+    public void ForceRedirect(string url)
+    {
+        NavigationManager.NavigateTo(url, true);
+    }
+}
+
 

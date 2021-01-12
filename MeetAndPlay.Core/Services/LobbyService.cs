@@ -192,7 +192,7 @@ namespace MeetAndPlay.Core.Services
 
             if (!filter.GameName.IsNullOrWhiteSpace())
                 lobbiesQuery = lobbiesQuery
-                    .Where(l => l.LobbyGames.Any(lg => lg.Game.Name.Contains(filter.GameName)));
+                    .Where(l => l.LobbyGames.Any(lg => lg.Game.Name.ToLower().Contains(filter.GameName.ToLower())));
 
             if (filter.AgeFrom.HasValue)
             {

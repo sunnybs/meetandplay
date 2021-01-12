@@ -148,7 +148,7 @@ namespace MeetAndPlay.Core.Services
 
             if (!filter.GameName.IsNullOrWhiteSpace())
                 offerQuery = offerQuery
-                    .Where(l => l.UserOfferGames.Any(lg => lg.Game.Name.Contains(filter.GameName)));
+                    .Where(l => l.UserOfferGames.Any(lg => lg.Game.Name.ToLower().Contains(filter.GameName.ToLower())));
 
             if (filter.AgeFrom.HasValue)
             {
