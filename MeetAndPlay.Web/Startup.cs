@@ -98,6 +98,8 @@ namespace MeetAndPlay.Web
             services.AddScoped<IGamesService, GamesService>();
             services.AddScoped<IFilesService, FilesService>();
             services.AddScoped<IUserOfferService, UserOfferService>();
+            services.AddScoped<IPlaceService, PlaceService>();
+            
             services.AddScoped<FileViewModelsService>();
             
             services.AddServerSideBlazor();

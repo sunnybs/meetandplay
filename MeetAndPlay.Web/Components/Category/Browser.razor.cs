@@ -87,17 +87,22 @@ namespace MeetAndPlay.Web.Components.Category
 
         private async Task<string> GetPosterAsync(AggregatedOfferDto item)
         {
-            if (!item.PosterUrl.IsNullOrWhiteSpace())
-                return ApiInfo.Value.Address + item.PosterUrl;
+            if (item.PosterUrl.IsNullOrWhiteSpace())
+                return OfferType switch
+                {
+                    OfferType.Personal => await ApiClient.GetRandomOfferPictureLinkAsync(),
+                    OfferType.Lobby => await ApiClient.GetRandomLobbyPictureLinkAsync(),
+                    OfferType.Place => await ApiClient.GetRandomLobbyPictureLinkAsync(),
+                    OfferType.Event => await ApiClient.GetRandomLobbyPictureLinkAsync(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            
+            if (item.PosterUrl.Contains("http"))
+                return item.PosterUrl;
+                
+            return ApiInfo.Value.Address + item.PosterUrl;
 
-            return OfferType switch
-            {
-                OfferType.Personal => await ApiClient.GetRandomOfferPictureLinkAsync(),
-                OfferType.Lobby => await ApiClient.GetRandomLobbyPictureLinkAsync(),
-                OfferType.Place => await ApiClient.GetRandomLobbyPictureLinkAsync(),
-                OfferType.Event => await ApiClient.GetRandomLobbyPictureLinkAsync(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+
         }
     }
 }

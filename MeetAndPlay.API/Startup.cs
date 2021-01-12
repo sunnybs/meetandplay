@@ -38,6 +38,8 @@ namespace MeetAndPlay.API
             services.AddScoped<IFilesService, FilesService>();
             services.AddScoped<IPictureRandomizer, PictureRandomizer>();
 
+            services.AddScoped<IPlaceService, PlaceService>();
+            
             services.AddHttpContextAccessor();
             
             services.AddControllers();

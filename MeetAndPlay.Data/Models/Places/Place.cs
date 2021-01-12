@@ -11,5 +11,6 @@ namespace MeetAndPlay.Data.Models.Places
         public string Description { get; set; }
         public string Site { get; set; }
         public ICollection<Location> Locations { get; set; }
+        public ICollection<PlaceImage> PlaceImages { get; set; }
     }
 }

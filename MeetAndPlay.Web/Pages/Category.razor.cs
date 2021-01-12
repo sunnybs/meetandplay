@@ -16,6 +16,7 @@ namespace MeetAndPlay.Web.Pages
         
         [Inject] private ILobbyService LobbyService { get; set; }
         [Inject] private IUserOfferService UserOfferService { get; set; }
+        [Inject] private IPlaceService PlaceService { get; set; }
         
         protected CategoryViewModel CurrentCategory { get; set; }
         protected CategoryViewModel[] OtherCategories { get; set; }
@@ -30,7 +31,7 @@ namespace MeetAndPlay.Web.Pages
             {
                 OfferType.Personal => UserOfferService,
                 OfferType.Lobby => LobbyService,
-                OfferType.Place => LobbyService,
+                OfferType.Place => PlaceService,
                 OfferType.Event => LobbyService,
                 _ => throw new ArgumentOutOfRangeException()
             };
