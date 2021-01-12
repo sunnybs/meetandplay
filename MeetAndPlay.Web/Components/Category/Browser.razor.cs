@@ -22,10 +22,8 @@ namespace MeetAndPlay.Web.Components.Category
         protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
         [Parameter] public IOfferAggregator OfferAggregator { get; set; }
         
-        [Inject]
-        public IOptions<ApiInfo> ApiInfo { get; set; }
-        [Inject]
-        public IApiClient ApiClient { get; set; }
+        [Inject] public IOptions<ApiInfo> ApiInfo { get; set; }
+        [Inject] public IApiClient ApiClient { get; set; }
         
         protected IEnumerable<AggregatedOfferDto> CurrentOffers { get; set; } = new List<AggregatedOfferDto>();
         protected PagingFilter CurrentPage { get; set; } = new ();
@@ -53,14 +51,10 @@ namespace MeetAndPlay.Web.Components.Category
 
             foreach (var item in offers.Items)
             {
-                item.PosterUrl = item.PosterUrl.IsNullOrWhiteSpace()
-                    ? await ApiClient.GetRandomLobbyPictureLinkAsync()
-                    : ApiInfo.Value.Address + item.PosterUrl;
-
+                item.PosterUrl = await GetPosterAsync(item);
                 item.OfferLink = GetLink(item);
                 if (item.Description?.Length > 50)
                     item.Description = item.Description.Substring(0, 50) + "...";
-
                 item.Title = GetTitle(item);
             }
             
@@ -71,7 +65,7 @@ namespace MeetAndPlay.Web.Components.Category
         {
             return OfferType switch
             {
-                OfferType.Personal => "/Personal/" + item.Id,
+                OfferType.Personal => "/Offer/" + item.Id,
                 OfferType.Lobby => "/Lobby/" + item.Id,
                 OfferType.Place => "/Place/" + item.Id,
                 OfferType.Event => "/Event/" + item.Id,
@@ -87,6 +81,21 @@ namespace MeetAndPlay.Web.Components.Category
                 OfferType.Lobby => item.Title ?? "Хотим поиграть",
                 OfferType.Place => item.Title,
                 OfferType.Event => item.Title,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private async Task<string> GetPosterAsync(AggregatedOfferDto item)
+        {
+            if (!item.PosterUrl.IsNullOrWhiteSpace())
+                return ApiInfo.Value.Address + item.PosterUrl;
+
+            return OfferType switch
+            {
+                OfferType.Personal => await ApiClient.GetRandomOfferPictureLinkAsync(),
+                OfferType.Lobby => await ApiClient.GetRandomLobbyPictureLinkAsync(),
+                OfferType.Place => await ApiClient.GetRandomLobbyPictureLinkAsync(),
+                OfferType.Event => await ApiClient.GetRandomLobbyPictureLinkAsync(),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

@@ -1,0 +1,161 @@
+@page "/Offer/{Id}"
+@using MeetAndPlay.Core.Abstraction.Services
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Core.Infrastructure.Helpers
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Web.Services
+@using Microsoft.Extensions.Options
+@using MeetAndPlay.Web.Options
+
+
+<h2>Игроки</h2>
+<div class="row">
+    <div class="m-2 col-md-3 text-center">
+        <img class="card-img-top rounded mb-2" style="max-height: 300px; object-fit: cover;" src="@PosterLink" alt="Постер анкеты">
+        <div class="my-2">
+            @if (IsLobbyCreatedByCurrentUser)
+                    {
+                        <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@Model.Id">Редактировать</a>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-warning bg-lightyellow border-0">Пригласить</button>
+                    }
+        </div>
+        
+        
+        
+
+    </div>
+    <div class="m-2 col-md">
+        <h3>
+            <b>@Title</b>
+        </h3>
+        <hr>
+        @if (Model.UserOfferGames != null && Model.UserOfferGames.Any())
+        {
+            <div class="row">
+                <div class="col">
+                    <b>Игры</b>
+                </div>
+                <div class="col">
+                    @Model.UserOfferGames.Select(g => g.Game.Name).JoinAsString(", ")
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col">
+                <b>Свободное время для игры</b>
+            </div>
+            @if (Model.Periods.Any(p => p.IsEveryday))
+            {
+                <div class="col">
+                    Время найдётся всегда!
+                </div>
+            } 
+            else if (Model.ActualOfferDate != default)
+            {
+                <div class="col">
+                    Хочу сыграть @Model.ActualOfferDate.ToString("dd MMMM yyyy HH:mm");
+                </div>
+            } 
+            else if (Model.Periods.Any(p => p.IsDayOfWeek))
+            {
+                <div class="col">
+                    Есть время в @Model.Periods.Select(p => p.Day.GetDescription()).JoinAsString(", ");
+                </div>
+            }
+            else
+            {
+                <div class="col">
+                    :(
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col">
+                <b>Где предпочитаю играть</b>
+            </div>
+            <div class="col">
+                @Model.PlaceType.GetDescription()
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (!Model.Description.IsNullOrWhiteSpace())
+{
+    <div>
+        <label>
+            <b>Пожелания:</b>
+        </label>
+        <p>@Model.Description</p>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    [Inject]
+    private IUserOfferService UserOfferService { get; set; }
+
+    [Inject]
+    protected IUserAuthenticationService UserAuthenticationService { get; set; }
+
+    [Inject]
+    private IApiClient ApiClient { get; set; }
+
+    [Inject]
+    private IUserService UserService { get; set; }
+
+    [Inject]
+    public IOptions<ApiInfo> ApiInfo { get; set; }
+
+    private Guid ParsedId => Guid.Parse(Id);
+    protected UserOffer Model { get; set; } = new ()
+    {
+        Periods = new List<UserOfferPeriod>()
+    };
+    protected string Title { get; set; }
+    protected string PosterLink { get; set; }
+    protected bool IsLobbyCreatedByCurrentUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = await UserOfferService.GetByIdAsync(ParsedId);
+        if (UserAuthenticationService.IsAuthenticated())
+        {
+            var currentUserId = await UserService.GetCurrentUserIdAsync();
+            IsLobbyCreatedByCurrentUser = currentUserId == Model.AuthorId;
+        }
+        else
+        {
+            IsLobbyCreatedByCurrentUser = false;
+        }
+
+        Title = BuildTitle();
+        PosterLink = await BuildPosterAsync();
+    }
+
+    private string BuildTitle()
+    {
+        var titleParts = new List<string>();
+        titleParts.Add("Хочу поиграть");
+        var games = Model.UserOfferGames.Select(lg => lg.Game.Name).JoinAsString(", ");
+        if (!games.IsNullOrWhiteSpace())
+            titleParts.Add(games);
+        return titleParts.JoinAsString(", ");
+    }
+
+    private async Task<string> BuildPosterAsync()
+    {
+        var posterLobbyImage = Model.Author.UserImages?
+            .FirstOrDefault(i => i.IsCurrentAvatar);
+        return posterLobbyImage != null
+            ? ApiInfo.Value.Address + posterLobbyImage.File.FileLink
+            : await ApiClient.GetRandomPlayerPictureLinkAsync();
+    }
+}

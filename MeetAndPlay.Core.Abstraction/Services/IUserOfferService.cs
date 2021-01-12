@@ -9,5 +9,6 @@ namespace MeetAndPlay.Core.Abstraction.Services
     {
         Task<Guid> AddUserOfferAsync(UserOffer userOffer);
         Task<Guid> UpdateUserOfferAsync(UserOffer userOffer);
+        Task<UserOffer> GetOfferByUserIdAsync(Guid userId);
     }
 }

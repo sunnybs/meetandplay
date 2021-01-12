@@ -26,28 +26,33 @@ namespace MeetAndPlay.Core.Services
             _mnpContext = mnpContext;
             _userService = userService;
         }
-        
+
         public async Task<UserOffer> GetByIdAsync(Guid id)
         {
             var offer = await _mnpContext.UserOffers
                 .Include(o => o.Author)
                 .ThenInclude(a => a.UserImages)
                 .ThenInclude(ui => ui.File)
-                
+
                 .Include(o => o.Author)
                 .ThenInclude(a => a.UserImages)
                 .ThenInclude(ui => ui.CompressedFile)
-                
+
                 .Include(o => o.Periods)
                 .Include(o => o.UserOfferGames)
                 .ThenInclude(og => og.Game)
                 .AsNoTracking()
                 .FindByIdAsync(id);
-            
+
             if (offer == null)
                 throw new NotFoundException($"Offer with {id} not found");
 
             return offer;
+        }
+
+        public async Task<UserOffer> GetOfferByUserIdAsync(Guid userId)
+        {
+            return await _mnpContext.UserOffers.AsNoTracking().FirstOrDefaultAsync(o => o.AuthorId == userId);
         }
 
         public async Task<IReadOnlyList<UserOffer>> GetAsync(ReadFilter filter)
@@ -98,7 +103,7 @@ namespace MeetAndPlay.Core.Services
             
             userOffer.UserOfferGames = null;
             userOffer.Periods = null;
-            _mnpContext.Update(offerGames);
+            _mnpContext.Update(userOffer);
             
             var oldOfferGames = _mnpContext.UserOfferGames
                 .Where(lg => lg.UserOfferId == userOffer.Id);

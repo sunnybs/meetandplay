@@ -56,7 +56,7 @@ namespace MeetAndPlay.Web
             });
 
             services.AddDbContext<MNPContext>(ConfigureDbContext, ServiceLifetime.Transient);
-            
+
             var authSection = Configuration.GetSection("Auth");
             var authOptions = Configuration.GetSection("Auth").Get<Auth>();
             services.Configure<Auth>(authSection);
@@ -97,6 +97,7 @@ namespace MeetAndPlay.Web
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGamesService, GamesService>();
             services.AddScoped<IFilesService, FilesService>();
+            services.AddScoped<IUserOfferService, UserOfferService>();
             services.AddScoped<FileViewModelsService>();
             
             services.AddServerSideBlazor();

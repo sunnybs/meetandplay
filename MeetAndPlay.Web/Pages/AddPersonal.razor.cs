@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CurrieTechnologies.Razor.SweetAlert2;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Core.Infrastructure.Extensions;
 using MeetAndPlay.Data.Enums;
+using MeetAndPlay.Data.Models.Commons;
 using MeetAndPlay.Data.Models.Offers;
 using MeetAndPlay.Web.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -23,6 +25,7 @@ namespace MeetAndPlay.Web.Pages
         [Inject] protected IGamesService GamesService { get; set; }
         [Inject] protected IMapper Mapper { get; set; }
         [Inject] protected IUserOfferService UserOfferService { get; set; }
+        [Inject] protected IUserService UserService { get; set; }
         [Inject] protected SweetAlertService Swal { get; set; }
         [Inject] protected NavigationManager NavigationManager { get; set; }
         
@@ -32,6 +35,27 @@ namespace MeetAndPlay.Web.Pages
                 await UpdateAsync();
             else
                 await AddAsync();
+        }
+        
+        protected override async Task OnInitializedAsync()
+        {
+            if (Id != null && Guid.TryParse(Id, out var parsedId))
+            {
+                var offer = await UserOfferService.GetByIdAsync(parsedId);
+                
+                UserOfferModel = Mapper.Map<AddPersonalViewModel>(offer);
+                UserOfferModel.Games = offer.UserOfferGames.Select(lg => lg.Game).ToHashSet();
+                UserOfferModel.PeriodViewModel = MapPeriodViewModelFromDomain(offer);
+            }
+            else
+            {
+                var currentUserId = await UserService.GetCurrentUserIdAsync();
+                var alreadyCreatedOffer = await UserOfferService.GetOfferByUserIdAsync(currentUserId);
+                if (alreadyCreatedOffer != null)
+                {
+                    NavigationManager.NavigateTo("/Offer/" + alreadyCreatedOffer.Id, true);
+                }
+            }
         }
         
         protected async Task AddAsync()
@@ -46,9 +70,9 @@ namespace MeetAndPlay.Web.Pages
             
             try
             {
-                var lobbyId = await UserOfferService.AddUserOfferAsync(userOffer);
+                var personalId = await UserOfferService.AddUserOfferAsync(userOffer);
                 await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
-                NavigationManager.NavigateTo($"/Lobby/{lobbyId}");
+                NavigationManager.NavigateTo($"/Offer/{personalId}");
             }
             catch (Exception e)
             {
@@ -68,13 +92,20 @@ namespace MeetAndPlay.Web.Pages
             if (UserOfferModel.PeriodViewModel.HasActualTime)
                 userOffer.ActualOfferDate = UserOfferModel.PeriodViewModel.ActualTime ?? default;
             else
+            {
                 userOffer.Periods = MapPeriodsFromViewModel(UserOfferModel.PeriodViewModel);
+                foreach (var period in userOffer.Periods)
+                {
+                    period.UserOfferId = userOffer.Id;
+                }
+            }
+                
             
             try
             {
-                var lobbyId = await UserOfferService.UpdateUserOfferAsync(userOffer);
+                var personalId = await UserOfferService.UpdateUserOfferAsync(userOffer);
                 await Swal.FireAsync("Успешно сохранено!", null, SweetAlertIcon.Success);
-                NavigationManager.NavigateTo($"/Lobby/{lobbyId}");
+                NavigationManager.NavigateTo($"/Offer/{personalId}");
             }
             catch (Exception e)
             {
@@ -93,7 +124,7 @@ namespace MeetAndPlay.Web.Pages
                 var results = new List<UserOfferPeriod>();
                 foreach (var day in period.Days)
                 {
-                    var weekDay = Enum.Parse<WeekDays>(day);
+                    var weekDay = MapFromDescription(day);
                     //TODO: set real hour values
                     results.Add(new UserOfferPeriod {IsDayOfWeek = true, Day = weekDay, HoursFrom = 0, HoursTo = 24});
                 }
@@ -102,6 +133,46 @@ namespace MeetAndPlay.Web.Pages
             }
 
             throw new ArgumentException();
+        }
+
+        private WeekDays MapFromDescription(string source)
+        {
+            return source switch
+            {
+                "Понедельник" => WeekDays.Monday,
+                "Вторник" => WeekDays.Tuesday,
+                "Среда" => WeekDays.Wednesday,
+                "Четверг" => WeekDays.Thursday,
+                "Пятница" => WeekDays.Friday,
+                "Суббота" => WeekDays.Saturday,
+                "Воскресенье" => WeekDays.Sunday,
+                _ => throw new ArgumentOutOfRangeException(nameof(source), source, null)
+            };
+        }
+
+        private PeriodViewModel MapPeriodViewModelFromDomain(UserOffer userOffer)
+        {
+            var domainPeriods = userOffer.Periods;
+            if (domainPeriods.Any(p => p.IsEveryday))
+                return new PeriodViewModel {IsEveryday = true};
+            if (domainPeriods.Any(p => p.IsDayOfWeek))
+            {
+                var pm = new PeriodViewModel
+                {
+                    IsDayOfWeek = true, Days = domainPeriods.Select(p => p.Day.GetDescription()).ToHashSet()
+                };
+                return pm;
+            }
+
+            if (userOffer.ActualOfferDate != default)
+            {
+                return new PeriodViewModel
+                {
+                    HasActualTime = true, ActualTime = userOffer.ActualOfferDate
+                };
+            }
+
+            throw new ArgumentException("invalid domain period");
         }
     }
 }

@@ -24,7 +24,6 @@ namespace MeetAndPlay.Web.Pages
         [Inject] protected IMapper Mapper { get; set; }
         [Inject] protected SweetAlertService Swal { get; set; }
         [Inject] protected IApiClient ApiClient { get; set; }
-        [Inject] private ILogger<AddLobby> Logger { get; set; }
         [Inject] private NavigationManager NavigationManager { get; set; }
 
         protected bool IsUpdating => Id != null;

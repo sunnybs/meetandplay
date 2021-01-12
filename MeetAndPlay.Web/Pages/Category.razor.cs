@@ -15,6 +15,7 @@ namespace MeetAndPlay.Web.Pages
         [Inject] private NavigationManager NavigationManager { get; set; }
         
         [Inject] private ILobbyService LobbyService { get; set; }
+        [Inject] private IUserOfferService UserOfferService { get; set; }
         
         protected CategoryViewModel CurrentCategory { get; set; }
         protected CategoryViewModel[] OtherCategories { get; set; }
@@ -22,15 +23,25 @@ namespace MeetAndPlay.Web.Pages
         protected OffersFilterDto FilterModel = new();
 
         protected IOfferAggregator OfferAggregator { get; set; }
-        
+
+        protected override void OnInitialized()
+        {
+            OfferAggregator = OfferType switch
+            {
+                OfferType.Personal => UserOfferService,
+                OfferType.Lobby => LobbyService,
+                OfferType.Place => LobbyService,
+                OfferType.Event => LobbyService,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
         //TODO: Разобраться со State объекта
         protected override Task OnParametersSetAsync()
         {
             var categories = CategoryViewModelsStorage.GetCategories().ToArray();
             CurrentCategory = categories.Single(c => c.OfferType == OfferType);
             OtherCategories = categories.Where(c => c.OfferType != OfferType).ToArray();
-
-            OfferAggregator = LobbyService;
             return Task.CompletedTask;
         }
     }
