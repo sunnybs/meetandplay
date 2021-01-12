@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using MeetAndPlay.Data.Models.Files;
 using MeetAndPlay.Data.Models.Games;
 using MeetAndPlay.Data.Models.Offers;
@@ -7,6 +8,7 @@ using MeetAndPlay.Data.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace MeetAndPlay.Core.Infrastructure
 {
@@ -84,6 +86,16 @@ namespace MeetAndPlay.Core.Infrastructure
                 .HasKey(key => new {key.UserId, key.RoleId});
 
             modelBuilder.Entity<File>().HasIndex(f => f.Hash).IsUnique();
+        }
+        
+        public void DetachAll()
+        {
+            EntityEntry[] entityEntries = this.ChangeTracker.Entries().ToArray();
+
+            foreach (EntityEntry entityEntry in entityEntries)
+            {
+                entityEntry.State = EntityState.Detached;
+            }
         }
     }
 }

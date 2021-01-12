@@ -14,7 +14,7 @@
                 <label class="small">
                     <b>Дата, когда Вы хотите поиграть:</b>
                 </label>
-                <RadzenDatePicker @bind-Value=@RadzenDateTime DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
+                <RadzenDatePicker @bind-Value=@FilterModel.From DateFormat="d" Change="EventCallback<DateTime?>.Empty" Placeholder="Выберите дату"/>
             </div>
         </div>
 

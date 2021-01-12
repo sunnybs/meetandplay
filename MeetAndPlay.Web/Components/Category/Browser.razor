@@ -1,21 +1,45 @@
 @using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
 @inherits BrowserComponent
 
 <div class="mx-4">
-     @foreach (var group in CurrentOffers.AsGroups(2))
-        {
-            <div class="row">
-                @foreach (var item in group)
-                {
-                    <div class="card col-sm my-4 border-0">
-                      <img class="card-img-top rounded" style="max-height: 300px; object-fit: cover;" src="@item.PosterUrl" alt="Постер новости">
-                      <div class="card-body">
-                          <h5 class="card-title"><b>@item.Title</b></h5>
+    @foreach (var group in CurrentOffers.AsGroups(3))
+    {
+        <div class="row">
+            @foreach (var item in group)
+            {
+                <a class="card col-sm my-4 border-0 text-dark" href="@item.OfferLink">
+                    <img class="card-img-top rounded" style="max-height: 300px; object-fit: cover;" src="@item.PosterUrl" alt="Постер новости">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <b>@item.Title</b>
+                        </h5>
                         <p class="card-text">@item.Description</p>
-                        <p class="card-text"><small class="text-muted">@item.ActualOfferDate?.ToString("dd MMMM yyyy")</small></p>
-                      </div>
+                        <p class="card-text">
+                            <small class="text-muted">@item.ActualOfferDate?.ToString("dd MMMM yyyy")</small>
+                        </p>
+                        <p>
+                            @if (item.GameLevel != GameLevel.Undefined)
+                            {
+                                <span class="badge badge-success m-1">@item.GameLevel.GetDescription()</span>
+                            }
+                            @if (item.PlaceType != PlaceType.Undefined)
+                            {
+                                <span class="badge badge-primary m-1">@item.PlaceType.GetDescription()</span>
+                            }
+                            @if (item.Games != null && item.Games.Any())
+                            {
+                                @foreach (var game in item.Games.Take(3))
+                                {
+                                    {
+                                        <span class="badge badge-secondary m-1">@game</span>
+                                    }
+                                }
+                            }
+                        </p>
                     </div>
-                }
-            </div>
-        }
+                </a>
+            }
+        </div>
+    }
 </div>

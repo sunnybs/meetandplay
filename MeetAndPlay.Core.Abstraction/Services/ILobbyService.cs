@@ -7,9 +7,8 @@ using MeetAndPlay.Data.Models.Offers;
 
 namespace MeetAndPlay.Core.Abstraction.Services
 {
-    public interface ILobbyService
+    public interface ILobbyService : IOfferAggregator
     {
-        Task<AggregatedOfferDto[]> GetLobbiesForAggregatingAsync(OffersFilterDto filter);
         Task<Lobby> GetLobbyByIdAsync(Guid id);
         Task<Guid> AddLobbyAsync(Lobby lobby);
         Task<Guid> UpdateLobbyAsync(Lobby lobby);

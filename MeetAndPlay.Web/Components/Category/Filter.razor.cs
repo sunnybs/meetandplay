@@ -11,7 +11,7 @@ namespace MeetAndPlay.Web.Components.Category
     public class FilterComponent : ComponentBase
     {
         [Parameter] public string OfferTypeName { get; set; }
-        private OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
+        protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
 
         protected ElementReference DateFilter;
         protected ElementReference GameFilter;
@@ -26,18 +26,7 @@ namespace MeetAndPlay.Web.Components.Category
         protected string PlaceFilterClasses;
         protected string PeopleFilterClasses;
 
-        [CascadingParameter]
-        protected OffersFilterDto FilterModel { get; set; }
-
-        protected DateTime? RadzenDateTime
-        {
-            get => FilterModel.From;
-            set
-            {
-                FilterModel.From = value;
-                FilterModel.StateHasChanged();
-            }
-        }
+        [CascadingParameter] protected OffersFilterDto FilterModel { get; set; }
 
         protected override void OnInitialized()
         {

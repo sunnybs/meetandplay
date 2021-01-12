@@ -101,9 +101,7 @@ namespace MeetAndPlay.Web
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
-            services.AddScoped<IOfferAggregator, OfferAggregator>();
 
-            
             services.AddAutoMapper(typeof(LobbyProfile));
         }
 
