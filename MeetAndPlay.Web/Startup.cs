@@ -99,6 +99,8 @@ namespace MeetAndPlay.Web
             services.AddScoped<IFilesService, FilesService>();
             services.AddScoped<IUserOfferService, UserOfferService>();
             services.AddScoped<IPlaceService, PlaceService>();
+
+            services.AddScoped<IOfferAggregator, OfferAggregator>();
             
             services.AddScoped<FileViewModelsService>();
             

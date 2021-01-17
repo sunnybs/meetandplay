@@ -20,10 +20,10 @@
         </button>
     }
 </div>
-<Search Placeholder="Во что вы хотите поиграть?"></Search>
+<Search Placeholder="Во что вы хотите поиграть?"/>
 <CascadingValue Value="FilterModel">
     <Filter OfferTypeName="@OfferTypeName"/>
-    <Browser OfferTypeName="@OfferTypeName" OfferAggregator="@OfferAggregator"/>
+    <Browser OfferAggregator="@OfferAggregator"/>
 </CascadingValue>
 
 @code {

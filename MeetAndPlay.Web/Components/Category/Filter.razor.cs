@@ -11,6 +11,9 @@ namespace MeetAndPlay.Web.Components.Category
     public class FilterComponent : ComponentBase
     {
         [Parameter] public string OfferTypeName { get; set; }
+
+        [Parameter] public bool IsGlobalSearch { get; set; } = false;
+        
         protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
 
         protected ElementReference DateFilter;
@@ -36,17 +39,22 @@ namespace MeetAndPlay.Web.Components.Category
         protected override Task OnParametersSetAsync()
         {
             SetDefaultClasses();
-            switch (OfferType)
+
+            if (!IsGlobalSearch)
             {
-                case OfferType.Place:
-                    PeopleFilterClasses += " d-none";
-                    break;
-                case OfferType.Event:
-                    GameFilterClasses += " d-none";
-                    PlaceFilterClasses += " d-none";
-                    PeopleFilterClasses += " d-none";
-                    break;
+                switch (OfferType)
+                            {
+                                case OfferType.Place:
+                                    PeopleFilterClasses += " d-none";
+                                    break;
+                                case OfferType.Event:
+                                    GameFilterClasses += " d-none";
+                                    PlaceFilterClasses += " d-none";
+                                    PeopleFilterClasses += " d-none";
+                                    break;
+                            }
             }
+            
             return Task.CompletedTask;
         }
 

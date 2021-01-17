@@ -18,8 +18,6 @@ namespace MeetAndPlay.Web.Components.Category
     public class BrowserComponent : ComponentBase
     {
         [CascadingParameter] public OffersFilterDto FilterModel { get; set; }
-        [Parameter] public string OfferTypeName { get; set; }
-        protected OfferType OfferType => Enum.Parse<OfferType>(OfferTypeName);
         [Parameter] public IOfferAggregator OfferAggregator { get; set; }
         
         [Inject] public IOptions<ApiInfo> ApiInfo { get; set; }
@@ -63,7 +61,7 @@ namespace MeetAndPlay.Web.Components.Category
 
         private string GetLink(AggregatedOfferDto item)
         {
-            return OfferType switch
+            return item.OfferType switch
             {
                 OfferType.Personal => "/Offer/" + item.Id,
                 OfferType.Lobby => "/Lobby/" + item.Id,
@@ -75,7 +73,7 @@ namespace MeetAndPlay.Web.Components.Category
 
         private string GetTitle(AggregatedOfferDto item)
         {
-            return OfferType switch
+            return item.OfferType switch
             {
                 OfferType.Personal => item.Title,
                 OfferType.Lobby => item.Title ?? "Хотим поиграть",
@@ -88,7 +86,7 @@ namespace MeetAndPlay.Web.Components.Category
         private async Task<string> GetPosterAsync(AggregatedOfferDto item)
         {
             if (item.PosterUrl.IsNullOrWhiteSpace())
-                return OfferType switch
+                return item.OfferType switch
                 {
                     OfferType.Personal => await ApiClient.GetRandomOfferPictureLinkAsync(),
                     OfferType.Lobby => await ApiClient.GetRandomLobbyPictureLinkAsync(),

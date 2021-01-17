@@ -1,10 +1,9 @@
 <div class="my-4">
     <div class="form-group d-flex">
         <div class="flex-grow-1">
-            <input type="text" class="form-control rounded-left" placeholder="@Placeholder">
-        </div>
+            <input type="text" class="form-control rounded-left" placeholder="@Placeholder" @bind=@Value></div>
         <div>
-             <button class="btn btn-outline-warning my-2 my-sm-0 rounded-right"><i class="fas fa-search"></i></button>
+             <button @onclick=@SearchByQuery class="btn btn-outline-warning my-2 my-sm-0 rounded-right"><i class="fas fa-search"></i></button>
         </div>
     </div>
 </div>
@@ -12,4 +11,16 @@
 @code {
     [Parameter]
     public string Placeholder { get; set; }
+    
+    [Parameter]
+    public string Value { get; set; }
+    
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; }
+
+    protected void SearchByQuery()
+    {
+        NavigationManager.NavigateTo("/Search/"+Value, true);
+    }
+    
 }

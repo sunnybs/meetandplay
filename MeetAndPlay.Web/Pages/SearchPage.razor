@@ -1,0 +1,26 @@
+@page "/Search/{Query}"
+@using MeetAndPlay.Data.DTO.OfferAggregator
+@using MeetAndPlay.Core.Abstraction.Services
+<h3>Поиск</h3>
+
+<Search Placeholder="Во что вы хотите поиграть?" Value="@Query"/>
+<CascadingValue Value="FilterModel">
+    <Filter IsGlobalSearch="@true"/>
+    <Browser OfferAggregator="@OfferAggregator"/>
+</CascadingValue>
+
+@code {
+    protected OffersFilterDto FilterModel = new();
+    
+    [Parameter]
+    public string Query { get; set; }
+    
+    [Inject]
+    protected IOfferAggregator OfferAggregator { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        FilterModel.GameName = Query;
+        return Task.CompletedTask;
+    }
+}
