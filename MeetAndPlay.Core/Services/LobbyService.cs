@@ -16,18 +16,20 @@ namespace MeetAndPlay.Core.Services
 {
     public class LobbyService : ILobbyService
     {
-        private readonly MNPContext _mnpContext;
         private readonly IUserService _userService;
+        private readonly DbContextFactory _contextFactory;
 
-        public LobbyService(MNPContext mnpContext, IUserService userService)
+        public LobbyService(IUserService userService, DbContextFactory contextFactory)
         {
-            _mnpContext = mnpContext;
             _userService = userService;
+            _contextFactory = contextFactory;
         }
 
         public async Task<Lobby> GetLobbyByIdAsync(Guid id)
         {
-            var lobby = await _mnpContext.Lobbies
+            await using var mnpContext = _contextFactory.Create();
+            
+            var lobby = await mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
                 .Include(l => l.LobbyImages)
@@ -45,20 +47,24 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Guid> AddLobbyAsync(Lobby lobby)
         {
+            await using var mnpContext = _contextFactory.Create();
+            
             lobby.CreationDate = DateTime.Now;
             lobby.IsActive = true;
 
             var currentUserId = await _userService.GetCurrentUserIdAsync();
             lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
 
-            await _mnpContext.AddAsync(lobby);
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.AddAsync(lobby);
+            await mnpContext.SaveChangesAsync();
             return lobby.Id;
         }
 
         public async Task<Guid> UpdateLobbyAsync(Lobby lobby)
         {
-            var oldLobby = await _mnpContext.Lobbies.AsNoTracking()
+            await using var mnpContext = _contextFactory.Create();
+            
+            var oldLobby = await mnpContext.Lobbies.AsNoTracking()
                 .Include(l => l.LobbyPlayers)
                 .ThenInclude(lp => lp.Player).AsNoTracking()
                 .FindByIdAsync(lobby.Id);
@@ -73,47 +79,54 @@ namespace MeetAndPlay.Core.Services
             lobby.CreationDate = oldLobby.CreationDate;
             lobby.IsActive = oldLobby.IsActive;
 
-            _mnpContext.Update(lobby);
+            mnpContext.Update(lobby);
 
-            var oldLobbyGames = _mnpContext.LobbyGames
+            var oldLobbyGames = mnpContext.LobbyGames
                 .Where(lg => lg.LobbyId == lobby.Id);
-            _mnpContext.RemoveRange(oldLobbyGames);
-            await _mnpContext.AddRangeAsync(lobbyGames);
-            await _mnpContext.SaveAndDetachAsync();
+            mnpContext.RemoveRange(oldLobbyGames);
+            await mnpContext.AddRangeAsync(lobbyGames);
+            await mnpContext.SaveChangesAsync();
             return lobby.Id;
         }
 
         public async Task UpdateLobbyImagesAsync(Guid lobbyId, LobbyImage[] newLobbyImages)
         {
-            var oldImages = _mnpContext.LobbyImages.Where(i => i.LobbyId == lobbyId);
+            await using var mnpContext = _contextFactory.Create();
+            
+            var oldImages = mnpContext.LobbyImages.Where(i => i.LobbyId == lobbyId);
             foreach (var newLobbyImage in newLobbyImages) newLobbyImage.LobbyId = lobbyId;
-            _mnpContext.LobbyImages.RemoveRange(oldImages);
-            await _mnpContext.LobbyImages.AddRangeAsync(newLobbyImages);
-            await _mnpContext.SaveAndDetachAsync();
-            _mnpContext.DetachAll();
+            mnpContext.LobbyImages.RemoveRange(oldImages);
+            await mnpContext.LobbyImages.AddRangeAsync(newLobbyImages);
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task<bool> IsUserAlreadyRequestedToLobbyAsync(Guid lobbyId, Guid userId)
         {
-            return await _mnpContext
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext
                 .LobbyJoiningRequests
                 .AnyAsync(r => r.UserId == userId && r.LobbyId == lobbyId);
         }
 
         public async Task AddJoiningRequestAsync(LobbyJoiningRequest lobbyJoiningRequest)
         {
+            await using var mnpContext = _contextFactory.Create();
+            
             lobbyJoiningRequest.InitialDate = DateTime.Now;
             lobbyJoiningRequest.RequestStatus = RequestStatus.Initial;
             if (lobbyJoiningRequest.RequestInitiator == RequestInitiator.User)
                 lobbyJoiningRequest.UserId = await _userService.GetCurrentUserIdAsync();
 
-            await _mnpContext.LobbyJoiningRequests.AddAsync(lobbyJoiningRequest);
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.LobbyJoiningRequests.AddAsync(lobbyJoiningRequest);
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task<LobbyJoiningRequest[]> GetUserJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator)
         {
-            return await _mnpContext
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext
                 .LobbyJoiningRequests
                 .Include(r => r.User)
                 .Include(r => r.Lobby)
@@ -124,7 +137,9 @@ namespace MeetAndPlay.Core.Services
         
         public async Task<LobbyJoiningRequest[]> GetUserLobbiesJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator)
         {
-            return await _mnpContext
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext
                 .LobbyJoiningRequests
                 .Include(r => r.User)
                 .Include(r => r.Lobby)
@@ -136,40 +151,48 @@ namespace MeetAndPlay.Core.Services
 
         public async Task RemoveJoiningRequestAsync(Guid lobbyId, Guid userId)
         {
-            var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
+            await using var mnpContext = _contextFactory.Create();
+            
+            var request = await mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureRequestInitializedByCurrentUserAsync(request);
-            _mnpContext.Remove(request);
-            await _mnpContext.SaveAndDetachAsync();
+            mnpContext.Remove(request);
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task UpdateJoiningRequestMessageAsync(Guid lobbyId, Guid userId, string newMessage)
         {
-            var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
+            await using var mnpContext = _contextFactory.Create();
+            
+            var request = await mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureRequestInitializedByCurrentUserAsync(request);
 
             request.InitialMessage = newMessage;
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task UpdateJoiningRequestStatus(Guid lobbyId, Guid userId, RequestStatus requestStatus)
         {
-            var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
+            await using var mnpContext = _contextFactory.Create();
+            
+            var request = await mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureCurrentUserCanChangeRequestStatusAsync(request);
             request.RequestStatus = requestStatus;
             if (requestStatus == RequestStatus.Accepted
-                && await _mnpContext.LobbyPlayers.AnyAsync(lp => lp.LobbyId == lobbyId && lp.PlayerId == userId))
+                && await mnpContext.LobbyPlayers.AnyAsync(lp => lp.LobbyId == lobbyId && lp.PlayerId == userId))
             {
-                await _mnpContext.AddAsync(new LobbyPlayer {LobbyId = lobbyId, PlayerId = userId, IsCreator = false});
-                var lobby = await _mnpContext.Lobbies.FindAsync(lobbyId);
+                await mnpContext.AddAsync(new LobbyPlayer {LobbyId = lobbyId, PlayerId = userId, IsCreator = false});
+                var lobby = await mnpContext.Lobbies.FindAsync(lobbyId);
                 lobby.CurrentPlayersCount++;
             }
 
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task<Lobby[]> GetLobbiesCreatedByUserAsync(string userName)
         {
-            return await _mnpContext.Lobbies
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
                 .Where(l => l.LobbyPlayers.Any(lp => lp.Player.UserName.ToLower() == userName.ToLower() 
@@ -181,19 +204,22 @@ namespace MeetAndPlay.Core.Services
         
         public async Task<Lobby[]> GetLobbiesCreatedByUserAsync(Guid userId)
         {
-            return await _mnpContext.Lobbies
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext.Lobbies
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
                 .Where(l => l.LobbyPlayers.Any(lp => lp.PlayerId == userId
                                                      && lp.IsCreator))
                 .AsNoTracking()
                 .ToArrayAsync();
-
         }
         
         public async Task<CountArray<AggregatedOfferDto>> AggregateOffersAsync(OffersFilterDto filter)
         {
-            var lobbiesQuery = _mnpContext.Lobbies.AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var lobbiesQuery = mnpContext.Lobbies.AsQueryable();
             if (filter.From.HasValue)
                 lobbiesQuery = lobbiesQuery.Where(l => l.PlannedGameDate >= filter.From);
 
@@ -248,12 +274,14 @@ namespace MeetAndPlay.Core.Services
 
         private async Task EnsureCurrentUserCanChangeRequestStatusAsync(LobbyJoiningRequest lobbyJoiningRequest)
         {
+            await using var mnpContext = _contextFactory.Create();
+            
             var currentUserId = await _userService.GetCurrentUserIdAsync();
             switch (lobbyJoiningRequest.RequestInitiator)
             {
                 case RequestInitiator.User:
                 {
-                    var isCurrentUserLobbyPlayer = await _mnpContext.LobbyJoiningRequests.AnyAsync(r =>
+                    var isCurrentUserLobbyPlayer = await mnpContext.LobbyJoiningRequests.AnyAsync(r =>
                         r.Lobby.Id == lobbyJoiningRequest.LobbyId
                         && r.Lobby.LobbyPlayers.Select(p => p.PlayerId).Contains(currentUserId));
 

@@ -16,11 +16,11 @@ namespace MeetAndPlay.Core.Services
 {
     public class PlaceService : IPlaceService
     {
-        private readonly MNPContext _mnpContext;
+        private readonly DbContextFactory _contextFactory;
 
-        public PlaceService(MNPContext mnpContext)
+        public PlaceService(DbContextFactory contextFactory)
         {
-            _mnpContext = mnpContext;
+            _contextFactory = contextFactory;
         }
 
         public async Task ExecuteSeeding()
@@ -136,21 +136,24 @@ namespace MeetAndPlay.Core.Services
                 }
             };
 
-            await _mnpContext.AddAsync(country);
-            await _mnpContext.AddAsync(city);
-            await _mnpContext.AddRangeAsync(places);
-            await _mnpContext.AddRangeAsync(locations);
-            await _mnpContext.AddRangeAsync(files);
-            await _mnpContext.AddRangeAsync(placeImages);
+            await using var mnpContext = _contextFactory.Create();
+            
+            await mnpContext.AddAsync(country);
+            await mnpContext.AddAsync(city);
+            await mnpContext.AddRangeAsync(places);
+            await mnpContext.AddRangeAsync(locations);
+            await mnpContext.AddRangeAsync(files);
+            await mnpContext.AddRangeAsync(placeImages);
 
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.SaveAndDetachAsync();
         }
 
         public async Task<CountArray<AggregatedOfferDto>> AggregateOffersAsync(OffersFilterDto filter)
         {
             //TODO: implement HasManyGames in place
-
-            var placesQuery = _mnpContext.Places.AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var placesQuery = mnpContext.Places.AsQueryable();
 
             if (filter.PlaceType.HasValue && filter.PlaceType != PlaceType.Undefined)
                 placesQuery = placesQuery.Where(pl => pl.PlaceType == filter.PlaceType);

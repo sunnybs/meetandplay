@@ -105,6 +105,8 @@ namespace MeetAndPlay.Web
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
 
+            services.AddSingleton<DbContextFactory>();
+            
             services.AddAutoMapper(typeof(LobbyProfile));
         }
 

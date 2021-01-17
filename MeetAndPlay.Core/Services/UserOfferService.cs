@@ -18,18 +18,20 @@ namespace MeetAndPlay.Core.Services
 {
     public class UserOfferService : IUserOfferService
     {
-        private readonly MNPContext _mnpContext;
         private readonly IUserService _userService;
+        private readonly DbContextFactory _contextFactory;
 
-        public UserOfferService(MNPContext mnpContext, IUserService userService)
+        public UserOfferService(IUserService userService, DbContextFactory contextFactory)
         {
-            _mnpContext = mnpContext;
             _userService = userService;
+            _contextFactory = contextFactory;
         }
 
         public async Task<UserOffer> GetByIdAsync(Guid id)
         {
-            var offer = await _mnpContext.UserOffers
+            await using var mnpContext = _contextFactory.Create();
+            
+            var offer = await mnpContext.UserOffers
                 .Include(o => o.Author)
                 .ThenInclude(a => a.UserImages)
                 .ThenInclude(ui => ui.File)
@@ -52,7 +54,9 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<UserOffer> GetByUserNameAsync(string username)
         {
-            var offer = await _mnpContext.UserOffers
+            await using var mnpContext = _contextFactory.Create();
+            
+            var offer = await mnpContext.UserOffers
                 .Include(o => o.Author)
                 .ThenInclude(a => a.UserImages)
                 .ThenInclude(ui => ui.File)
@@ -75,12 +79,16 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<UserOffer> GetOfferByUserIdAsync(Guid userId)
         {
-            return await _mnpContext.UserOffers.AsNoTracking().FirstOrDefaultAsync(o => o.AuthorId == userId);
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext.UserOffers.AsNoTracking().FirstOrDefaultAsync(o => o.AuthorId == userId);
         }
 
         public async Task<IReadOnlyList<UserOffer>> GetAsync(ReadFilter filter)
         {
-            var userOffers = _mnpContext.UserOffers.AsNoTracking().AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var userOffers = mnpContext.UserOffers.AsNoTracking().AsQueryable();
             if (filter.PageSize.HasValue && filter.PageNumber.HasValue)
                 userOffers = userOffers.TakePage(filter.PageSize.Value, filter.PageNumber.Value);
             return await userOffers.ToArrayAsync();
@@ -88,7 +96,9 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<CountArray<UserOffer>> GetAsyncAsCountArray(ReadFilter filter)
         {
-            var userOffers = _mnpContext.UserOffers.AsNoTracking().AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var userOffers = mnpContext.UserOffers.AsNoTracking().AsQueryable();
             var count = await userOffers.CountAsync();
             
             if (filter.PageSize.HasValue && filter.PageNumber.HasValue)
@@ -101,19 +111,23 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Guid> AddUserOfferAsync(UserOffer userOffer)
         {
+            await using var mnpContext = _contextFactory.Create();
+            
             var authorId = await _userService.GetCurrentUserIdAsync();
             userOffer.AuthorId = authorId;
             userOffer.IsActive = true;
             userOffer.CreationDate = DateTime.Now;
 
-            await _mnpContext.AddAsync(userOffer);
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.AddAsync(userOffer);
+            await mnpContext.SaveChangesAsync();
             return userOffer.Id;
         }
 
         public async Task<Guid> UpdateUserOfferAsync(UserOffer userOffer)
         {
-            var oldUserOffer = await _mnpContext.UserOffers.AsNoTracking().FindByIdAsync(userOffer.Id);
+            await using var mnpContext = _contextFactory.Create();
+            
+            var oldUserOffer = await mnpContext.UserOffers.AsNoTracking().FindByIdAsync(userOffer.Id);
             if (oldUserOffer == null)
                 throw new NotFoundException($"Offer with {userOffer.Id} not found");
             
@@ -126,25 +140,27 @@ namespace MeetAndPlay.Core.Services
             
             userOffer.UserOfferGames = null;
             userOffer.Periods = null;
-            _mnpContext.Update(userOffer);
+            mnpContext.Update(userOffer);
             
-            var oldOfferGames = _mnpContext.UserOfferGames
+            var oldOfferGames = mnpContext.UserOfferGames
                 .Where(lg => lg.UserOfferId == userOffer.Id);
-            _mnpContext.RemoveRange(oldOfferGames);
-            await _mnpContext.AddRangeAsync(offerGames);
+            mnpContext.RemoveRange(oldOfferGames);
+            await mnpContext.AddRangeAsync(offerGames);
             
-            var oldPeriods = _mnpContext.UserOfferPeriods
+            var oldPeriods = mnpContext.UserOfferPeriods
                 .Where(lg => lg.UserOfferId == userOffer.Id);
-            _mnpContext.RemoveRange(oldPeriods);
-            await _mnpContext.AddRangeAsync(periods);
+            mnpContext.RemoveRange(oldPeriods);
+            await mnpContext.AddRangeAsync(periods);
             
-            await _mnpContext.SaveAndDetachAsync();
+            await mnpContext.SaveChangesAsync();
             return userOffer.Id;
         }
 
         public async Task<CountArray<AggregatedOfferDto>> AggregateOffersAsync(OffersFilterDto filter)
         {
-            var offerQuery = _mnpContext.UserOffers.AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var offerQuery = mnpContext.UserOffers.AsQueryable();
              if (filter.From.HasValue)
              {
                  var filterWeekDay = (WeekDays)((int)(filter.From.Value.DayOfWeek + 6) % 7);

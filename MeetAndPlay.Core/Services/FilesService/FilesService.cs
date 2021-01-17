@@ -21,13 +21,13 @@ namespace MeetAndPlay.Core.Services.FilesService
     {
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<FilesService> _logger;
-        private readonly MNPContext _mnpContext;
+        private readonly DbContextFactory _contextFactory;
 
-        public FilesService(MNPContext mnpContext, IWebHostEnvironment environment, ILogger<FilesService> logger)
+        public FilesService(IWebHostEnvironment environment, ILogger<FilesService> logger, DbContextFactory contextFactory)
         {
-            _mnpContext = mnpContext;
             _environment = environment;
             _logger = logger;
+            _contextFactory = contextFactory;
         }
 
         public async Task<File> UploadFileAsync(IFormFile file, bool needToSaveChanges = true)
@@ -43,7 +43,9 @@ namespace MeetAndPlay.Core.Services.FilesService
 
         public async Task<bool> IsFileExistsAsync(string fileHash)
         {
-            return await _mnpContext.Files.AnyAsync(f => f.Hash == fileHash);
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext.Files.AnyAsync(f => f.Hash == fileHash);
         }
 
         public Stream GetFileStream(string fileHash)
@@ -57,7 +59,9 @@ namespace MeetAndPlay.Core.Services.FilesService
 
         public async Task<File> GetFileAsync(string fileHash)
         {
-            var file = await _mnpContext.Files.SingleOrDefaultAsync(f => f.Hash == fileHash);
+            await using var mnpContext = _contextFactory.Create();
+            
+            var file = await mnpContext.Files.SingleOrDefaultAsync(f => f.Hash == fileHash);
             if (file != null) 
                 return file;
             
@@ -66,7 +70,9 @@ namespace MeetAndPlay.Core.Services.FilesService
         
         public async Task<string> GetFileMimeTypeAsync(string fileHash)
         {
-            var file = await _mnpContext.Files.SingleOrDefaultAsync(f => f.Hash == fileHash);
+            await using var mnpContext = _contextFactory.Create();
+            
+            var file = await mnpContext.Files.SingleOrDefaultAsync(f => f.Hash == fileHash);
             if (file != null) 
                 return file.MimeType;
             
@@ -78,9 +84,11 @@ namespace MeetAndPlay.Core.Services.FilesService
         public async Task<File> UploadFileAsync(Stream stream, FileInfo fileInfo, bool needToSaveChanges = true)
         {
             EnsureArgumentsAreValid(stream, fileInfo);
+            await using var mnpContext = _contextFactory.Create();
+            
             var fileHash = fileInfo.Hash;
             if (fileHash.IsNullOrWhiteSpace()) fileHash = ComputeMd5Hash(stream);
-            var fileInDb = await _mnpContext.Files.AsNoTracking().SingleOrDefaultAsync(f => f.Hash == fileHash);
+            var fileInDb = await mnpContext.Files.AsNoTracking().SingleOrDefaultAsync(f => f.Hash == fileHash);
             if (fileInDb != null)
             {
                 _logger.LogInformation($"File with hash {fileHash} already uploaded.");
@@ -104,8 +112,8 @@ namespace MeetAndPlay.Core.Services.FilesService
 
             if (needToSaveChanges)
             {
-                await _mnpContext.AddAsync(file);
-                await _mnpContext.SaveChangesAsync();
+                await mnpContext.AddAsync(file);
+                await mnpContext.SaveChangesAsync();
             }
             
             return file;

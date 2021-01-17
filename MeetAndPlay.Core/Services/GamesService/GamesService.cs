@@ -17,17 +17,19 @@ namespace MeetAndPlay.Core.Services.GamesService
 {
     public class GamesService : IGamesService
     {
-        private readonly MNPContext _mnpContext;
+        private readonly DbContextFactory _contextFactory;
         private readonly IFilesService _filesService;
 
-        public GamesService(MNPContext mnpContext, IFilesService filesService)
+        public GamesService(DbContextFactory contextFactory, IFilesService filesService)
         {
-            _mnpContext = mnpContext;
+            _contextFactory = contextFactory;
             _filesService = filesService;
         }
 
         public async Task SeedGamesAsync()
         {
+            await using var mnpContext = _contextFactory.Create();
+            
             var httpClient = new HttpClient();
             for (var i = 0; i <= 300; i += 100)
             {
@@ -38,26 +40,30 @@ namespace MeetAndPlay.Core.Services.GamesService
                 teseraGames = teseraGames.Where(g => g.TeseraId.ToString() != g.Title).ToArray();
                 foreach (var teseraGame in teseraGames)
                 {
-                    if (await _mnpContext.Games.AnyAsync(g => g.Name == teseraGame.Title))
+                    if (await mnpContext.Games.AnyAsync(g => g.Name == teseraGame.Title))
                         continue;
 
                     var game = teseraGame.ToGame();
-                    await _mnpContext.Games.AddAsync(game);
+                    await mnpContext.Games.AddAsync(game);
                     //TODO: Implement file upload;
                 }
             }
 
-            await _mnpContext.SaveChangesAsync();
+            await mnpContext.SaveChangesAsync();
         }
 
         public async Task<Game> GetByIdAsync(Guid id)
         {
-            return await _mnpContext.Games.AsNoTracking().FindByIdAsync(id);
+            await using var mnpContext = _contextFactory.Create();
+            
+            return await mnpContext.Games.AsNoTracking().FindByIdAsync(id);
         }
 
         public async Task<IReadOnlyList<Game>> GetAsync(ReadFilter filter)
         {
-            var games = _mnpContext.Games.AsNoTracking().AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var games = mnpContext.Games.AsNoTracking().AsQueryable();
             games = FilterGames(filter, games);
 
             if (filter.PageSize.HasValue && filter.PageNumber.HasValue)
@@ -81,7 +87,9 @@ namespace MeetAndPlay.Core.Services.GamesService
 
         public async Task<CountArray<Game>> GetAsyncAsCountArray(ReadFilter filter)
         {
-            var games = _mnpContext.Games.AsQueryable();
+            await using var mnpContext = _contextFactory.Create();
+            
+            var games = mnpContext.Games.AsQueryable();
             games = FilterGames(filter, games);
             var count = await games.CountAsync();
             

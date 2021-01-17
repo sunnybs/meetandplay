@@ -39,6 +39,8 @@ namespace MeetAndPlay.API
             services.AddScoped<IPictureRandomizer, PictureRandomizer>();
 
             services.AddScoped<IPlaceService, PlaceService>();
+
+            services.AddSingleton<DbContextFactory>();
             
             services.AddHttpContextAccessor();
             

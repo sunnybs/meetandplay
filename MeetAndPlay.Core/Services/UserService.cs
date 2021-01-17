@@ -14,18 +14,20 @@ namespace MeetAndPlay.Core.Services
     public class UserService : IUserService
     {
         private readonly IUserAuthenticationService _userAuthentication;
-        private readonly MNPContext _mnpContext;
+        private readonly DbContextFactory _contextFactory;
 
-        public UserService(IUserAuthenticationService userAuthentication, MNPContext mnpContext)
+        public UserService(IUserAuthenticationService userAuthentication, DbContextFactory contextFactory)
         {
             _userAuthentication = userAuthentication;
-            _mnpContext = mnpContext;
+            _contextFactory = contextFactory;
         }
         
         public async Task<User> GetCurrentUserAsync()
         {
             var login = _userAuthentication.GetCurrentUserName();
-            var user = await _mnpContext.Users
+            await using var mnpContext = _contextFactory.Create();
+            
+            var user = await mnpContext.Users
                 .IncludeImagesAndRoles()
                 .AsNoTracking()
                 .SingleOrDefaultAsync(u => u.UserName.ToLower() == login.ToLower());
@@ -36,7 +38,9 @@ namespace MeetAndPlay.Core.Services
         public async Task<Guid> GetCurrentUserIdAsync()
         {
             var login = _userAuthentication.GetCurrentUserName();
-            var userId = await _mnpContext.Users
+            await using var mnpContext = _contextFactory.Create();
+            
+            var userId = await mnpContext.Users
                 .Where(u => u.UserName.ToLower() == login.ToLower())
                 .AsNoTracking()
                 .Select(u => u.Id)
@@ -47,7 +51,9 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<User> GetUserByIdAsync(Guid id)
         {
-            var user = await _mnpContext.Users
+            await using var mnpContext = _contextFactory.Create();
+            
+            var user = await mnpContext.Users
                 .IncludeImagesAndRoles()
                 .AsNoTracking()
                 .SingleOrDefaultAsync(u => u.Id == id);
@@ -57,7 +63,9 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<User> GetUserByLoginAsync(string userName)
         {
-            var user = await _mnpContext.Users
+            await using var mnpContext = _contextFactory.Create();
+            
+            var user = await mnpContext.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(u => u.Role)
                 .Include(u => u.UserImages)

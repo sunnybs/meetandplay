@@ -1,10 +1,13 @@
 @page "/Offer/{Id}"
-@using MeetAndPlay.Core.Abstraction.Services
-@using MeetAndPlay.Core.Infrastructure.Extensions
-@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Web.Infrastructure.Extensions
+@using MeetAndPlay.Web.Options
 @using MeetAndPlay.Web.Services
 @using Microsoft.Extensions.Options
-@using MeetAndPlay.Web.Options
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Core.Abstraction.Services
+@using CurrieTechnologies.Razor.SweetAlert2
 
 
 <h2>Игроки</h2>
@@ -13,13 +16,37 @@
         <img class="card-img-top rounded mb-2" style="max-height: 300px; object-fit: cover;" src="@PosterLink" alt="Постер анкеты">
         <div class="my-2">
             @if (IsLobbyCreatedByCurrentUser)
-                    {
-                        <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@Model.Id">Редактировать</a>
-                    }
-                    else
-                    {
-                        <button type="button" class="btn btn-warning bg-lightyellow border-0">Пригласить</button>
-                    }
+            {
+                <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@Model.Id">Редактировать</a>
+            }
+            else
+            {
+                <button type="button" class="btn btn-warning bg-lightyellow border-0" @onclick=@ShowAddRequestModalAsync>Пригласить</button>
+
+                <div @ref="Modal" id="add-offer-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content p-4 text-center">
+                            <div class="form-group">
+                                <label>Приветсвенное письмо <small>необязательно</small></label>
+                                <textarea class="form-control" rows="3" @bind=@LobbyJoiningRequest.InitialMessage></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Выберите, куда Вы хотите пригласить пользователя</label>
+                                <select class="form-control" @bind=@LobbyRequestId>
+                                    <option disabled selected value="@(default(Guid))">Выберите...</option>
+                                    @foreach (var lobby in CurrentUserLobbies)
+                                    {
+                                        <option value="@lobby.Id">@(lobby.Title ?? lobby.BuildTitle())</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-warning bg-lightyellow border-0" @onclick=@AddJoiningRequestAsync>Отправить запрос</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
     <div class="m-2 col-md">
@@ -47,13 +74,13 @@
                 <div class="col">
                     Время найдётся всегда!
                 </div>
-            } 
+            }
             else if (Model.ActualOfferDate != default)
             {
                 <div class="col">
                     Хочу сыграть @Model.ActualOfferDate.ToString("dd MMMM yyyy HH:mm");
                 </div>
-            } 
+            }
             else if (Model.Periods.Any(p => p.IsDayOfWeek))
             {
                 <div class="col">
@@ -109,13 +136,33 @@
     [Inject]
     public IOptions<ApiInfo> ApiInfo { get; set; }
 
+    [Inject]
+    protected SweetAlertService Swal { get; set; }
+
+    [Inject]
+    protected ILobbyService LobbyService { get; set; }
+
+    [Inject]
+    protected IJSRuntime JSRuntime { get; set; }
+
+    protected LobbyJoiningRequest LobbyJoiningRequest { get; set; } = new();
+
+    protected Lobby[] CurrentUserLobbies { get; set; } = {};
+
+    protected ElementReference Modal;
+
     private Guid ParsedId => Guid.Parse(Id);
-    protected UserOffer Model { get; set; } = new ()
+
+    protected UserOffer Model { get; set; } = new()
     {
         Periods = new List<UserOfferPeriod>()
     };
+
     protected string Title { get; set; }
     protected string PosterLink { get; set; }
+
+    protected Guid LobbyRequestId { get; set; }
+
     protected bool IsLobbyCreatedByCurrentUser { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -124,6 +171,7 @@
         if (UserAuthenticationService.IsAuthenticated())
         {
             var currentUserId = await UserService.GetCurrentUserIdAsync();
+            CurrentUserLobbies = await LobbyService.GetLobbiesCreatedByUserAsync(currentUserId);
             IsLobbyCreatedByCurrentUser = currentUserId == Model.AuthorId;
         }
         else
@@ -153,4 +201,55 @@
             ? ApiInfo.Value.Address + posterLobbyImage.File.FileLink
             : await ApiClient.GetRandomPlayerPictureLinkAsync();
     }
+
+    protected async Task AddJoiningRequestAsync()
+    {
+        if (LobbyRequestId == default)
+        {
+            await Swal.FireAsync("Необходимо выбрать игру.");
+            return;
+        }
+
+        var userId = Model.Author.Id;
+        if (await LobbyService.IsUserAlreadyRequestedToLobbyAsync(LobbyRequestId, userId))
+        {
+            await Swal.FireAsync("Этот пользователь уже приглашен в эту игру.");
+            return;
+        }
+
+        LobbyJoiningRequest.LobbyId = LobbyRequestId;
+        LobbyJoiningRequest.UserId = userId;
+        LobbyJoiningRequest.RequestInitiator = RequestInitiator.Lobby;
+
+        try
+        {
+            await LobbyService.AddJoiningRequestAsync(LobbyJoiningRequest);
+            await Swal.FireAsync("Запрос отправлен!", null, SweetAlertIcon.Success);
+            await JSRuntime.InvokeVoidAsync("closeModal", Modal);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            await Swal.FireAsync("Что-то пошло не так :(", e.Message, SweetAlertIcon.Error);
+            throw;
+        }
+    }
+
+    protected async Task ShowAddRequestModalAsync()
+    {
+        if (!UserAuthenticationService.IsAuthenticated())
+        {
+            UserAuthenticationService.Challenge();
+            return;
+        }
+
+        if (!CurrentUserLobbies.Any())
+        {
+            await Swal.FireAsync("Для того чтобы пригласить пользователя Вам нужно организовать игру.");
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("showModal", Modal);
+    }
+
 }
