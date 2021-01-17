@@ -45,45 +45,42 @@ namespace MeetAndPlay.Core.Services
 
         public async Task<Guid> AddLobbyAsync(Lobby lobby)
         {
+            lobby.CreationDate = DateTime.Now;
+            lobby.IsActive = true;
 
-                lobby.CreationDate = DateTime.Now;
-                lobby.IsActive = true;
+            var currentUserId = await _userService.GetCurrentUserIdAsync();
+            lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
 
-                var currentUserId = await _userService.GetCurrentUserIdAsync();
-                lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
-
-                await _mnpContext.AddAsync(lobby);
-                await _mnpContext.SaveChangesAsync();
-                _mnpContext.DetachAll();
-                return lobby.Id;
+            await _mnpContext.AddAsync(lobby);
+            await _mnpContext.SaveAndDetachAsync();
+            return lobby.Id;
         }
 
         public async Task<Guid> UpdateLobbyAsync(Lobby lobby)
         {
             var oldLobby = await _mnpContext.Lobbies.AsNoTracking()
-                    .Include(l => l.LobbyPlayers)
-                    .ThenInclude(lp => lp.Player).AsNoTracking()
-                    .FindByIdAsync(lobby.Id);
-                if (oldLobby == null)
-                    throw new NotFoundException($"Lobby with {lobby.Id} not found");
+                .Include(l => l.LobbyPlayers)
+                .ThenInclude(lp => lp.Player).AsNoTracking()
+                .FindByIdAsync(lobby.Id);
+            if (oldLobby == null)
+                throw new NotFoundException($"Lobby with {lobby.Id} not found");
 
-                lobby.LobbyPlayers = oldLobby.LobbyPlayers;
-                await EnsureCurrentUserHasAccessToWriteAsync(lobby);
+            lobby.LobbyPlayers = oldLobby.LobbyPlayers;
+            await EnsureCurrentUserHasAccessToWriteAsync(lobby);
 
-                var lobbyGames = lobby.LobbyGames;
-                lobby.LobbyGames = null;
-                lobby.CreationDate = oldLobby.CreationDate;
-                lobby.IsActive = oldLobby.IsActive;
-                
-                _mnpContext.Update(lobby);
+            var lobbyGames = lobby.LobbyGames;
+            lobby.LobbyGames = null;
+            lobby.CreationDate = oldLobby.CreationDate;
+            lobby.IsActive = oldLobby.IsActive;
 
-                var oldLobbyGames = _mnpContext.LobbyGames
-                    .Where(lg => lg.LobbyId == lobby.Id);
-                _mnpContext.RemoveRange(oldLobbyGames);
-                await _mnpContext.AddRangeAsync(lobbyGames);
-                await _mnpContext.SaveChangesAsync();
-                _mnpContext.DetachAll();
-                return lobby.Id;
+            _mnpContext.Update(lobby);
+
+            var oldLobbyGames = _mnpContext.LobbyGames
+                .Where(lg => lg.LobbyId == lobby.Id);
+            _mnpContext.RemoveRange(oldLobbyGames);
+            await _mnpContext.AddRangeAsync(lobbyGames);
+            await _mnpContext.SaveAndDetachAsync();
+            return lobby.Id;
         }
 
         public async Task UpdateLobbyImagesAsync(Guid lobbyId, LobbyImage[] newLobbyImages)
@@ -92,15 +89,26 @@ namespace MeetAndPlay.Core.Services
             foreach (var newLobbyImage in newLobbyImages) newLobbyImage.LobbyId = lobbyId;
             _mnpContext.LobbyImages.RemoveRange(oldImages);
             await _mnpContext.LobbyImages.AddRangeAsync(newLobbyImages);
-            await _mnpContext.SaveChangesAsync();
+            await _mnpContext.SaveAndDetachAsync();
             _mnpContext.DetachAll();
+        }
+
+        public async Task<bool> IsUserAlreadyRequestedToLobbyAsync(Guid lobbyId, Guid userId)
+        {
+            return await _mnpContext
+                .LobbyJoiningRequests
+                .AnyAsync(r => r.UserId == userId && r.LobbyId == lobbyId);
         }
 
         public async Task AddJoiningRequestAsync(LobbyJoiningRequest lobbyJoiningRequest)
         {
-            await EnsureRequestInitializedByCurrentUserAsync(lobbyJoiningRequest);
+            lobbyJoiningRequest.InitialDate = DateTime.Now;
+            lobbyJoiningRequest.RequestStatus = RequestStatus.Initial;
+            if (lobbyJoiningRequest.RequestInitiator == RequestInitiator.User)
+                lobbyJoiningRequest.UserId = await _userService.GetCurrentUserIdAsync();
+
             await _mnpContext.LobbyJoiningRequests.AddAsync(lobbyJoiningRequest);
-            await _mnpContext.SaveChangesAsync();
+            await _mnpContext.SaveAndDetachAsync();
         }
 
         public async Task RemoveJoiningRequestAsync(Guid lobbyId, Guid userId)
@@ -108,7 +116,7 @@ namespace MeetAndPlay.Core.Services
             var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
             await EnsureRequestInitializedByCurrentUserAsync(request);
             _mnpContext.Remove(request);
-            await _mnpContext.SaveChangesAsync();
+            await _mnpContext.SaveAndDetachAsync();
         }
 
         public async Task UpdateJoiningRequestMessageAsync(Guid lobbyId, Guid userId, string newMessage)
@@ -117,7 +125,7 @@ namespace MeetAndPlay.Core.Services
             await EnsureRequestInitializedByCurrentUserAsync(request);
 
             request.InitialMessage = newMessage;
-            await _mnpContext.SaveChangesAsync();
+            await _mnpContext.SaveAndDetachAsync();
         }
 
         public async Task UpdateJoiningRequestStatus(Guid lobbyId, Guid userId, RequestStatus requestStatus)
@@ -133,7 +141,74 @@ namespace MeetAndPlay.Core.Services
                 lobby.CurrentPlayersCount++;
             }
 
-            await _mnpContext.SaveChangesAsync();
+            await _mnpContext.SaveAndDetachAsync();
+        }
+
+        public async Task<Lobby[]> GetLobbiesCreatedByUserAsync(string userName)
+        {
+            return await _mnpContext.Lobbies
+                .Include(l => l.LobbyGames)
+                .ThenInclude(lg => lg.Game)
+                .Where(l => l.LobbyPlayers.Any(lp => lp.Player.UserName.ToLower() == userName.ToLower() 
+                                                     && lp.IsCreator))
+                .AsNoTracking()
+                .ToArrayAsync();
+
+        }
+        
+        public async Task<CountArray<AggregatedOfferDto>> AggregateOffersAsync(OffersFilterDto filter)
+        {
+            var lobbiesQuery = _mnpContext.Lobbies.AsQueryable();
+            if (filter.From.HasValue)
+                lobbiesQuery = lobbiesQuery.Where(l => l.PlannedGameDate >= filter.From);
+
+            if (filter.To.HasValue)
+                lobbiesQuery = lobbiesQuery.Where(l => l.PlannedGameDate >= filter.To);
+
+            if (filter.PlaceType.HasValue && filter.PlaceType != PlaceType.Undefined)
+                lobbiesQuery = lobbiesQuery.Where(l => l.PlaceType == filter.PlaceType);
+
+            if (filter.GameLevel.HasValue && filter.GameLevel != GameLevel.Undefined)
+                lobbiesQuery = lobbiesQuery.Where(l => l.GameLevel == filter.GameLevel);
+
+            if (!filter.GameName.IsNullOrWhiteSpace())
+                lobbiesQuery = lobbiesQuery
+                    .Where(l => l.LobbyGames.Any(lg => lg.Game.Name.ToLower().Contains(filter.GameName.ToLower())));
+
+            if (filter.AgeFrom.HasValue)
+            {
+                var dateFrom = DateTime.Now.AddYears(filter.AgeFrom.Value * -1);
+                lobbiesQuery = lobbiesQuery
+                    .Where(l => l.LobbyPlayers.Any(lp => lp.Player.BirthDate.Value >= dateFrom));
+            }
+
+            if (filter.AgeTo.HasValue)
+            {
+                var dateTo = DateTime.Now.AddYears(filter.AgeTo.Value * -1);
+                lobbiesQuery = lobbiesQuery
+                    .Where(l => l.LobbyPlayers.Any(lp => lp.Player.BirthDate.Value <= dateTo));
+            }
+
+            var count = await lobbiesQuery.CountAsync();
+
+            if (filter.PageNumber.HasValue && filter.PageSize.HasValue)
+                lobbiesQuery = lobbiesQuery.TakePage(filter.PageSize.Value, filter.PageNumber.Value);
+
+            var results = await lobbiesQuery.AsNoTracking()
+                .Select(l => new AggregatedOfferDto(
+                    l.Id,
+                    OfferType.Lobby,
+                    l.Title,
+                    l.Description,
+                    l.LobbyImages.FirstOrDefault(i => i.IsCurrentPoster).File.FileLink,
+                    null,
+                    l.PlannedGameDate,
+                    l.LobbyGames.Select(lg => lg.Game.Name).ToArray(),
+                    l.GameLevel,
+                    l.PlaceType))
+                .ToArrayAsync();
+
+            return new CountArray<AggregatedOfferDto>(results, count);
         }
 
         private async Task EnsureCurrentUserCanChangeRequestStatusAsync(LobbyJoiningRequest lobbyJoiningRequest)
@@ -173,61 +248,6 @@ namespace MeetAndPlay.Core.Services
             var currentUserId = await _userService.GetCurrentUserIdAsync();
             if (lobbyCreator.Id != currentUserId)
                 throw new NoAccessException($"User {currentUserId} can't edit lobby {lobby.Id}");
-        }
-
-        public async Task<CountArray<AggregatedOfferDto>> AggregateOffersAsync(OffersFilterDto filter)
-        {
-            var lobbiesQuery = _mnpContext.Lobbies.AsQueryable();
-            if (filter.From.HasValue)
-                lobbiesQuery = lobbiesQuery.Where(l => l.PlannedGameDate >= filter.From);
-            
-            if (filter.To.HasValue)
-                lobbiesQuery = lobbiesQuery.Where(l => l.PlannedGameDate >= filter.To);
-
-            if (filter.PlaceType.HasValue && filter.PlaceType != PlaceType.Undefined)
-                lobbiesQuery = lobbiesQuery.Where(l => l.PlaceType == filter.PlaceType);
-            
-            if (filter.GameLevel.HasValue && filter.GameLevel != GameLevel.Undefined)
-                lobbiesQuery = lobbiesQuery.Where(l => l.GameLevel == filter.GameLevel);
-
-            if (!filter.GameName.IsNullOrWhiteSpace())
-                lobbiesQuery = lobbiesQuery
-                    .Where(l => l.LobbyGames.Any(lg => lg.Game.Name.ToLower().Contains(filter.GameName.ToLower())));
-
-            if (filter.AgeFrom.HasValue)
-            {
-                var dateFrom = DateTime.Now.AddYears(filter.AgeFrom.Value * -1);
-                lobbiesQuery = lobbiesQuery
-                    .Where(l => l.LobbyPlayers.Any(lp => lp.Player.BirthDate.Value >= dateFrom));
-            }
-            
-            if (filter.AgeTo.HasValue)
-            {
-                var dateTo = DateTime.Now.AddYears(filter.AgeTo.Value * -1);
-                lobbiesQuery = lobbiesQuery
-                    .Where(l => l.LobbyPlayers.Any(lp => lp.Player.BirthDate.Value <= dateTo));
-            }
-
-            var count = await lobbiesQuery.CountAsync();
-
-            if (filter.PageNumber.HasValue && filter.PageSize.HasValue)
-                lobbiesQuery = lobbiesQuery.TakePage(filter.PageSize.Value, filter.PageNumber.Value);
-            
-            var results = await lobbiesQuery.AsNoTracking()
-                .Select(l => new AggregatedOfferDto(
-                    l.Id,
-                    OfferType.Lobby,
-                    l.Title,
-                    l.Description,
-                    l.LobbyImages.FirstOrDefault(i => i.IsCurrentPoster).File.FileLink,
-                    null,
-                    l.PlannedGameDate,
-                    l.LobbyGames.Select(lg => lg.Game.Name).ToArray(),
-                    l.GameLevel,
-                    l.PlaceType))
-                .ToArrayAsync();
-
-            return new CountArray<AggregatedOfferDto>(results, count);
         }
     }
 }

@@ -24,5 +24,8 @@ namespace MeetAndPlay.Data.Models.Offers
         public List<LobbyImage> LobbyImages { get; set; }
         public List<LobbyPlayer> LobbyPlayers { get; set; }
         public List<LobbyJoiningRequest> LobbyJoiningRequests { get; set; }
+        
+        
+        
     }
 }

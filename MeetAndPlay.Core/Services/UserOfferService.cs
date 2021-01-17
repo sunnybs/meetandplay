@@ -50,6 +50,29 @@ namespace MeetAndPlay.Core.Services
             return offer;
         }
 
+        public async Task<UserOffer> GetByUserNameAsync(string username)
+        {
+            var offer = await _mnpContext.UserOffers
+                .Include(o => o.Author)
+                .ThenInclude(a => a.UserImages)
+                .ThenInclude(ui => ui.File)
+
+                .Include(o => o.Author)
+                .ThenInclude(a => a.UserImages)
+                .ThenInclude(ui => ui.CompressedFile)
+
+                .Include(o => o.Periods)
+                .Include(o => o.UserOfferGames)
+                .ThenInclude(og => og.Game)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(u => u.Author.UserName.ToLower() == username.ToLower());
+
+            if (offer == null)
+                throw new NotFoundException($"Offer with username {username} not found");
+
+            return offer;
+        }
+
         public async Task<UserOffer> GetOfferByUserIdAsync(Guid userId)
         {
             return await _mnpContext.UserOffers.AsNoTracking().FirstOrDefaultAsync(o => o.AuthorId == userId);

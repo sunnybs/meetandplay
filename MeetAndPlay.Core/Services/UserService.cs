@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Infrastructure;
+using MeetAndPlay.Core.Infrastructure.Exceptions;
 using MeetAndPlay.Core.Infrastructure.Extensions;
 using MeetAndPlay.Data.Models.Users;
 using Microsoft.AspNetCore.Http;
@@ -50,6 +51,24 @@ namespace MeetAndPlay.Core.Services
                 .IncludeImagesAndRoles()
                 .AsNoTracking()
                 .SingleOrDefaultAsync(u => u.Id == id);
+
+            return user;
+        }
+
+        public async Task<User> GetUserByLoginAsync(string userName)
+        {
+            var user = await _mnpContext.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(u => u.Role)
+                .Include(u => u.UserImages)
+                .ThenInclude(u => u.File)
+                .Include(u => u.UserImages)
+                .ThenInclude(u => u.CompressedFile)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower());
+
+            if (user == null)
+                throw new NotFoundException($"user with login {userName} not found");
 
             return user;
         }

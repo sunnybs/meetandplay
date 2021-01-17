@@ -4,5 +4,6 @@ namespace MeetAndPlay.Core.Abstraction.Services
     {
         public string GetCurrentUserName();
         public bool IsAuthenticated();
+        void Challenge();
     }
 }

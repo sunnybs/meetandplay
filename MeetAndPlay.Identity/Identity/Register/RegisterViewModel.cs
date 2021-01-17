@@ -25,15 +25,12 @@ namespace IdentityServerHost.Quickstart.UI.Register
         [Display(Name = "Подтвердить пароль")]
         public string PasswordConfirm { get; set; }
         
-        [Required]
         [Display(Name = "Имя")]
         public string FirstName { get; set; }
         
-        [Required]
         [Display(Name = "Фамилия")]
         public string LastName { get; set; }
         
-        [Required]
         [Display(Name = "Дата рождения")]
         public DateTime BirthDate { get; set; }
         

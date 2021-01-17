@@ -1,4 +1,12 @@
-﻿.body-container {
+﻿html, body {
+    font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    max-width: 1368px;
+    margin: 0 auto !important;
+    float: none !important;
+    position: relative;
+}
+
+.body-container {
     margin-top: 60px;
     padding-bottom:40px;
 }

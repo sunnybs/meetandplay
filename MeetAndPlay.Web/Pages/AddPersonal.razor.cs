@@ -132,7 +132,7 @@ namespace MeetAndPlay.Web.Pages
                 return results.ToArray();
             }
 
-            throw new ArgumentException();
+            throw new ArgumentException("invalid view model period");
         }
 
         private WeekDays MapFromDescription(string source)

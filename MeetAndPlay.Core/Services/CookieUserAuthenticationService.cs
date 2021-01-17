@@ -2,6 +2,7 @@ using System;
 using System.Security.Claims;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Infrastructure.Exceptions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 
 namespace MeetAndPlay.Core.Services
@@ -9,10 +10,12 @@ namespace MeetAndPlay.Core.Services
     public class CookieUserAuthenticationService : IUserAuthenticationService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly NavigationManager _navigationManager;
 
-        public CookieUserAuthenticationService(IHttpContextAccessor httpContextAccessor)
+        public CookieUserAuthenticationService(IHttpContextAccessor httpContextAccessor, NavigationManager navigationManager)
         {
             _httpContextAccessor = httpContextAccessor;
+            _navigationManager = navigationManager;
         }
 
         public string GetCurrentUserName()
@@ -35,6 +38,11 @@ namespace MeetAndPlay.Core.Services
         {
             var context = _httpContextAccessor.HttpContext;
             return context?.User?.Identity?.IsAuthenticated ?? false;
+        }
+
+        public void Challenge()
+        {
+            _navigationManager.NavigateTo($"/auth_endpoint?returnUrl={_navigationManager.Uri}",true);
         }
     }
 }

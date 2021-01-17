@@ -1,9 +1,210 @@
+@page "/Profile/{UserName}"
 @page "/Profile"
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Core.Infrastructure.Helpers
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Data.Models.Users
+@using MeetAndPlay.Web.Infrastructure.Extensions
+@using MeetAndPlay.Web.Options
+@using MeetAndPlay.Web.Services
+@using Microsoft.Extensions.Options
 @using MeetAndPlay.Core.Abstraction.Services
+@using MeetAndPlay.Core.Infrastructure.Exceptions
 @attribute [Authorize]
-@inject IUserAuthenticationService UserAuthenticationService
 
-<h3>Привет, @UserAuthenticationService.GetCurrentUserName().</h3>
-<div class="d-flex flex-row-reverse">
-    <a class="btn btn-warning bg-lightyellow border-0" href="/Profile/Edit">Редактировать профиль</a>
+<div class="row">
+    <div class="col-md-4 text-center">
+        <img src="@AvatarUrl" class="my-4" style="max-height: 200px; max-width: 300px; object-fit: cover;" alt="Аватар пользователя"/>
+        @if (IsCurrentUserProfile)
+        {
+            <a class="btn btn-warning bg-lightyellow border-0" href="/Profile/Edit">Редактировать профиль</a>
+        }
+    </div>
+    <div class="col-md">
+        <h3>
+            <b>@UserModel.UserName</b>
+        </h3>
+        <hr/>
+        <div class="mb-4">
+            @ShortDescription
+        </div>
+        @if (!UserModel.About.IsNullOrWhiteSpace())
+        {
+            <div>
+                <label>Обо мне:</label>
+                <p>
+                    @UserModel.About
+                </p>
+            </div>
+        }
+    </div>
+
+
+    <div class="row">
+        @if (IsUserOfferExists)
+        {
+            <div class="col-md my-4">
+                <div class="d-flex flex-row">
+                    <div class="mr-auto">
+                        <h3>Предпочтения по играм</h3>
+                    </div>
+                    @if (IsCurrentUserProfile)
+                    {
+                        <div>
+                            <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@UserOfferModel.Id">Редактировать</a>
+                        </div>
+                    }
+
+                </div>
+
+                <hr/>
+                @if (UserOfferModel.UserOfferGames != null && UserOfferModel.UserOfferGames.Any())
+                {
+                    <div class="row">
+                        <div class="col">
+                            <b>Игры</b>
+                        </div>
+                        <div class="col">
+                            @UserOfferModel.UserOfferGames.Select(g => g.Game.Name).JoinAsString(", ")
+                        </div>
+                    </div>
+                }
+                <div class="row">
+                    <div class="col">
+                        <b>Свободное время для игры</b>
+                    </div>
+                    @if (UserOfferModel.Periods.Any(p => p.IsEveryday))
+                    {
+                        <div class="col">
+                            Время найдётся всегда!
+                        </div>
+                    }
+                    else if (UserOfferModel.ActualOfferDate != default)
+                    {
+                        <div class="col">
+                            Хочу сыграть @UserOfferModel.ActualOfferDate.ToString("dd MMMM yyyy HH:mm");
+                        </div>
+                    }
+                    else if (UserOfferModel.Periods.Any(p => p.IsDayOfWeek))
+                    {
+                        <div class="col">
+                            Есть время в @UserOfferModel.Periods.Select(p => p.Day.GetDescription()).JoinAsString(", ");
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col">
+                            :(
+                        </div>
+                    }
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <b>Где предпочитаю играть</b>
+                    </div>
+                    <div class="col">
+                        @UserOfferModel.PlaceType.GetDescription()
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md my-4">
+                <p>Для того, чтобы другие игроки могли видеть Вас и приглашать играть, необходимо заполнить предпочтения по тому, как Вы хотите играть :)</p>
+                <div>
+                    <a type="button" href="/AddPersonal" class="btn btn-outline-warning text-dark">Заполнить</a>
+                </div>
+            </div>
+        }
+        @if (UserLobbiesModel.Any())
+        {
+            <div class="col-md my-4">
+                <h3>Игры, организованные пользователем</h3>
+                <hr>
+                <div class="list-group">
+                    @foreach (var userLobby in UserLobbiesModel)
+                    {
+                        <a href="/Lobby/@userLobby.Id" class="list-group-item list-group-item-action">@(userLobby.Title ?? userLobby.BuildTitle())</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
 </div>
+
+@code {
+
+    [Inject]
+    protected IUserAuthenticationService UserAuthenticationService { get; set; }
+
+    [Inject]
+    protected IUserService UserService { get; set; }
+
+    [Inject]
+    protected IUserOfferService UserOfferService { get; set; }
+
+    [Inject]
+    protected ILobbyService LobbyService { get; set; }
+
+    [Inject]
+    protected IOptions<ApiInfo> ApiInfo { get; set; }
+
+    [Inject]
+    protected IApiClient ApiClient { get; set; }
+
+    [Parameter]
+    public string UserName { get; set; }
+
+    protected string AvatarUrl { get; set; }
+
+    protected User UserModel { get; set; } = new();
+    protected UserOffer UserOfferModel { get; set; } = new();
+    protected Lobby[] UserLobbiesModel { get; set; } = {};
+
+    protected bool IsCurrentUserProfile { get; set; }
+    protected bool IsUserOfferExists { get; set; }
+    protected string ShortDescription { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserName.IsNullOrWhiteSpace())
+            UserName = UserAuthenticationService.GetCurrentUserName();
+        IsCurrentUserProfile = UserName == UserAuthenticationService.GetCurrentUserName();
+
+        UserModel = await UserService.GetUserByLoginAsync(UserName);
+        UserLobbiesModel = await LobbyService.GetLobbiesCreatedByUserAsync(UserName);
+
+        AvatarUrl = await BuildPosterAsync();
+        try
+        {
+            UserOfferModel = await UserOfferService.GetByUserNameAsync(UserName);
+            IsUserOfferExists = true;
+        }
+        catch (NotFoundException)
+        {
+            IsUserOfferExists = false;
+        }
+
+        ShortDescription = UserModel.FirstName;
+        if (UserModel.BirthDate.HasValue && UserModel.BirthDate.Value != default)
+        {
+            var diff = DateTime.Now - UserModel.BirthDate.Value;
+            var years = diff.Days / 365;
+            var yearWord = Commons.GetDeclension(years, "год", "лет", "года");
+            ShortDescription += $", {years} {yearWord}";
+        }
+    }
+
+    private async Task<string> BuildPosterAsync()
+    {
+        var posterLobbyImage = UserModel.UserImages?
+            .FirstOrDefault(i => i.IsCurrentAvatar);
+        return posterLobbyImage != null
+            ? ApiInfo.Value.Address + posterLobbyImage.File.FileLink
+            : await ApiClient.GetRandomPlayerPictureLinkAsync();
+    }
+
+}
