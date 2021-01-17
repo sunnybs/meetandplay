@@ -12,25 +12,25 @@
 @using MeetAndPlay.Core.Infrastructure.Exceptions
 @attribute [Authorize]
 
+<h2><i class="fas fa-user"></i> Профиль</h2>
 @if (IsCurrentUserProfile)
 {
     <div class="my-4">
         <NotificationNav/>
     </div>
 }
-
-<div class="row">
+<div class="row rounded shadow-sm p-4 mx-1">
     <div class="col-md-4 text-center">
-        <img src="@AvatarUrl" class="my-4" style="max-height: 200px; max-width: 300px; object-fit: cover;" alt="Аватар пользователя"/>
+        <img src="@AvatarUrl" class="rounded mb-4" style="max-height: 200px; max-width: 300px; object-fit: cover;" alt="Аватар пользователя"/>
         @if (IsCurrentUserProfile)
         {
-            <a class="btn btn-warning bg-lightyellow border-0" href="/Profile/Edit">Редактировать профиль</a>
+            <a class="btn btn-warning bg-lightyellow border-0" href="/Profile/Edit"><i class="fas fa-user-edit"></i> Редактировать профиль</a>
         }
     </div>
     <div class="col-md">
-        <h3>
+        <h2>
             <b>@UserModel.UserName</b>
-        </h3>
+        </h2>
         <hr/>
         <div class="mb-4">
             @ShortDescription
@@ -45,100 +45,98 @@
             </div>
         }
     </div>
-    
-    <div class="row">
-        @if (IsUserOfferExists)
-        {
-            <div class="col-md my-4">
-                <div class="d-flex flex-row">
-                    <div class="mr-auto">
-                        <h3>Предпочтения по играм</h3>
-                    </div>
-                    @if (IsCurrentUserProfile)
-                    {
-                        <div>
-                            <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@UserOfferModel.Id">Редактировать</a>
-                        </div>
-                    }
-
-                </div>
-
-                <hr/>
-                @if (UserOfferModel.UserOfferGames != null && UserOfferModel.UserOfferGames.Any())
-                {
-                    <div class="row">
-                        <div class="col">
-                            <b>Игры</b>
-                        </div>
-                        <div class="col">
-                            @UserOfferModel.UserOfferGames.Select(g => g.Game.Name).JoinAsString(", ")
-                        </div>
-                    </div>
-                }
-                <div class="row">
-                    <div class="col">
-                        <b>Свободное время для игры</b>
-                    </div>
-                    @if (UserOfferModel.Periods.Any(p => p.IsEveryday))
-                    {
-                        <div class="col">
-                            Время найдётся всегда!
-                        </div>
-                    }
-                    else if (UserOfferModel.ActualOfferDate != default)
-                    {
-                        <div class="col">
-                            Хочу сыграть @UserOfferModel.ActualOfferDate.ToString("dd MMMM yyyy HH:mm");
-                        </div>
-                    }
-                    else if (UserOfferModel.Periods.Any(p => p.IsDayOfWeek))
-                    {
-                        <div class="col">
-                            Есть время в @UserOfferModel.Periods.Select(p => p.Day.GetDescription()).JoinAsString(", ");
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="col">
-                            :(
-                        </div>
-                    }
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <b>Где предпочитаю играть</b>
-                    </div>
-                    <div class="col">
-                        @UserOfferModel.PlaceType.GetDescription()
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="col-md my-4">
-                <p>Для того, чтобы другие игроки могли видеть Вас и приглашать играть, необходимо заполнить предпочтения по тому, как Вы хотите играть :)</p>
-                <div>
-                    <a type="button" href="/AddPersonal" class="btn btn-outline-warning text-dark">Заполнить</a>
-                </div>
-            </div>
-        }
-        @if (UserLobbiesModel.Any())
-        {
-            <div class="col-md my-4">
-                <h3>Игры, организованные пользователем</h3>
-                <hr>
-                <div class="list-group">
-                    @foreach (var userLobby in UserLobbiesModel)
-                    {
-                        <a href="/Lobby/@userLobby.Id" class="list-group-item list-group-item-action">@(userLobby.Title ?? userLobby.BuildTitle())</a>
-                    }
-                </div>
-            </div>
-        }
-    </div>
 
 </div>
+
+
+@if (IsUserOfferExists)
+{
+    <div class="my-4 rounded shadow-sm p-4">
+        <div class="d-flex flex-row">
+            <div class="mr-auto">
+                <h2><i class="fas fa-dice"></i> Предпочтения по играм</h2>
+            </div>
+            @if (IsCurrentUserProfile)
+            {
+                <div>
+                    <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@UserOfferModel.Id"><i class="fas fa-edit"></i> Изменить</a>
+                </div>
+            }
+
+        </div>
+
+        <hr/>
+        @if (UserOfferModel.UserOfferGames != null && UserOfferModel.UserOfferGames.Any())
+        {
+            <div class="row">
+                <div class="col">
+                    <b>Игры</b>
+                </div>
+                <div class="col">
+                    @UserOfferModel.UserOfferGames.Select(g => g.Game.Name).JoinAsString(", ")
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col">
+                <b>Свободное время для игры</b>
+            </div>
+            @if (UserOfferModel.Periods.Any(p => p.IsEveryday))
+            {
+                <div class="col">
+                    Время найдётся всегда!
+                </div>
+            }
+            else if (UserOfferModel.ActualOfferDate != default)
+            {
+                <div class="col">
+                    Хочу сыграть @UserOfferModel.ActualOfferDate.ToString("dd MMMM yyyy HH:mm");
+                </div>
+            }
+            else if (UserOfferModel.Periods.Any(p => p.IsDayOfWeek))
+            {
+                <div class="col">
+                    Есть время в @UserOfferModel.Periods.Select(p => p.Day.GetDescription()).JoinAsString(", ");
+                </div>
+            }
+            else
+            {
+                <div class="col">
+                    :(
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col">
+                <b>Где предпочитаю играть</b>
+            </div>
+            <div class="col">
+                @UserOfferModel.PlaceType.GetDescription()
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="my-4 rounded shadow-sm p-4">
+        <p>Для того, чтобы другие игроки могли видеть Вас и приглашать играть, необходимо заполнить предпочтения по тому, как Вы хотите играть :)</p>
+        <div>
+            <a type="button" href="/AddPersonal" class="btn btn-outline-warning text-dark">Заполнить</a>
+        </div>
+    </div>
+}
+@if (UserLobbiesModel.Any())
+{
+    <div class="my-4 rounded shadow-sm p-4">
+        <h2><i class="fas fa-dice"></i> Игры, организованные пользователем</h2>
+        <div class="list-group-flush mt-4">
+            @foreach (var userLobby in UserLobbiesModel)
+            {
+                <a href="/Lobby/@userLobby.Id" class="list-group-item list-group-item-action">@(userLobby.Title ?? userLobby.BuildTitle())</a>
+            }
+        </div>
+    </div>
+}
 
 @code {
 

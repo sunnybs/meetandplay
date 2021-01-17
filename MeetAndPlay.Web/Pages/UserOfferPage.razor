@@ -10,18 +10,21 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 
 
-<h2>Игроки</h2>
-<div class="row">
+<h2><i class="fas fa-users"></i> Игроки</h2>
+<div class="row p-4 rounded shadow-sm mx-1 my-4">
     <div class="m-2 col-md-3 text-center">
-        <img class="card-img-top rounded mb-2" style="max-height: 300px; object-fit: cover;" src="@PosterLink" alt="Постер анкеты">
-        <div class="my-2">
+        <img class="card-img-top rounded" style="max-height: 300px; object-fit: cover;" src="@PosterLink" alt="Постер анкеты">
+        <div class="my-4">
+            <h2><a href="/Profile/@Model.Author?.UserName" style="text-decoration: none; color: #023047;">@Model.Author?.UserName</a></h2>
+        </div>
+        <div class="my-4">
             @if (IsLobbyCreatedByCurrentUser)
             {
-                <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@Model.Id">Редактировать</a>
+                <a class="btn btn-warning bg-lightyellow border-0" href="/AddPersonal/@Model.Id"><i class="fas fa-user-edit"></i>  Редактировать</a>
             }
             else
             {
-                <button type="button" class="btn btn-warning bg-lightyellow border-0" @onclick=@ShowAddRequestModalAsync>Пригласить</button>
+                <button type="button" class="btn btn-warning bg-lightyellow border-0" @onclick=@ShowAddRequestModalAsync><i class="fas fa-user-plus"></i> Пригласить</button>
 
                 <div @ref="Modal" id="add-offer-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
@@ -108,13 +111,20 @@
 
 @if (!Model.Description.IsNullOrWhiteSpace())
 {
-    <div>
+    <div class="p-4 mb-4 rounded shadow-sm">
         <label>
             <b>Пожелания:</b>
         </label>
         <p>@Model.Description</p>
     </div>
 }
+
+<div class="my-4 p-4">
+    <p>
+        Не заинтересовали игры или место? Вы всегда можете опубликовать своё объявление :)
+        <AddOfferButton/>
+    </p>
+</div>
 
 @code {
 
