@@ -111,6 +111,29 @@ namespace MeetAndPlay.Core.Services
             await _mnpContext.SaveAndDetachAsync();
         }
 
+        public async Task<LobbyJoiningRequest[]> GetUserJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator)
+        {
+            return await _mnpContext
+                .LobbyJoiningRequests
+                .Include(r => r.User)
+                .Include(r => r.Lobby)
+                .Where(r => r.UserId == userId && r.RequestInitiator == requestInitiator)
+                .AsNoTracking()
+                .ToArrayAsync();
+        }
+        
+        public async Task<LobbyJoiningRequest[]> GetUserLobbiesJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator)
+        {
+            return await _mnpContext
+                .LobbyJoiningRequests
+                .Include(r => r.User)
+                .Include(r => r.Lobby)
+                .Where(r => r.Lobby.LobbyPlayers
+                    .Any(p => p.PlayerId == userId && p.IsCreator) && r.RequestInitiator == requestInitiator)
+                .AsNoTracking()
+                .ToArrayAsync();
+        }
+
         public async Task RemoveJoiningRequestAsync(Guid lobbyId, Guid userId)
         {
             var request = await _mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
@@ -150,6 +173,18 @@ namespace MeetAndPlay.Core.Services
                 .Include(l => l.LobbyGames)
                 .ThenInclude(lg => lg.Game)
                 .Where(l => l.LobbyPlayers.Any(lp => lp.Player.UserName.ToLower() == userName.ToLower() 
+                                                     && lp.IsCreator))
+                .AsNoTracking()
+                .ToArrayAsync();
+
+        }
+        
+        public async Task<Lobby[]> GetLobbiesCreatedByUserAsync(Guid userId)
+        {
+            return await _mnpContext.Lobbies
+                .Include(l => l.LobbyGames)
+                .ThenInclude(lg => lg.Game)
+                .Where(l => l.LobbyPlayers.Any(lp => lp.PlayerId == userId
                                                      && lp.IsCreator))
                 .AsNoTracking()
                 .ToArrayAsync();

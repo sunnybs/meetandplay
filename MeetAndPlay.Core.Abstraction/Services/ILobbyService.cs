@@ -16,6 +16,8 @@ namespace MeetAndPlay.Core.Abstraction.Services
         Task AddJoiningRequestAsync(LobbyJoiningRequest lobbyJoiningRequest);
         Task<bool> IsUserAlreadyRequestedToLobbyAsync(Guid lobbyId, Guid userId);
         Task<Lobby[]> GetLobbiesCreatedByUserAsync(string userName);
+        Task<LobbyJoiningRequest[]> GetUserJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator);
+        Task<LobbyJoiningRequest[]> GetUserLobbiesJoiningRequestsAsync(Guid userId, RequestInitiator requestInitiator);
         Task RemoveJoiningRequestAsync(Guid lobbyId, Guid userId);
         Task UpdateJoiningRequestMessageAsync(Guid lobbyId, Guid userId, string newMessage);
         Task UpdateJoiningRequestStatus(Guid lobbyId, Guid userId, RequestStatus requestStatus);

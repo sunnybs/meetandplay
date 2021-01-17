@@ -12,6 +12,13 @@
 @using MeetAndPlay.Core.Infrastructure.Exceptions
 @attribute [Authorize]
 
+@if (IsCurrentUserProfile)
+{
+    <div class="my-4">
+        <NotificationNav/>
+    </div>
+}
+
 <div class="row">
     <div class="col-md-4 text-center">
         <img src="@AvatarUrl" class="my-4" style="max-height: 200px; max-width: 300px; object-fit: cover;" alt="Аватар пользователя"/>
@@ -38,8 +45,7 @@
             </div>
         }
     </div>
-
-
+    
     <div class="row">
         @if (IsUserOfferExists)
         {

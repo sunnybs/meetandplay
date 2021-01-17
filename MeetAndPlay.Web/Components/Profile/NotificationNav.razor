@@ -1,0 +1,48 @@
+@using MeetAndPlay.Core.Abstraction.Services
+@using MeetAndPlay.Data.Enums
+<div class="d-flex justify-content-between">
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+        <b>Профиль</b>
+    </button>
+    
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+        <b>Вас пригласили <span style="color: green">@InvitesCount</span></b>
+    </button>
+    
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+        <b>К вам постучались <span style="color: green">@JoiningRequestsCount</span></b>
+    </button>
+    
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+        <b>Ваши действия</b>
+    </button>
+</div>
+
+
+@code {
+    [Inject] protected NavigationManager NavigationManager { get; set; }
+    [Inject] protected ILobbyService LobbyService { get; set; }
+    [Inject] protected IUserService UserService { get; set; }
+    
+    protected string InvitesCount { get; set; }
+    protected string JoiningRequestsCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+        var invites = await LobbyService.GetUserJoiningRequestsAsync(currentUserId, RequestInitiator.Lobby);
+        var newInvitesCount = invites.Count(i => i.RequestStatus == RequestStatus.Initial);
+        if (newInvitesCount != 0)
+            InvitesCount = $"+{newInvitesCount}";
+        
+        var lobbyRequests = await LobbyService.GetUserLobbiesJoiningRequestsAsync(currentUserId, RequestInitiator.User);
+        var lobbyRequestsCount = lobbyRequests.Count(i => i.RequestStatus == RequestStatus.Initial);
+        if (lobbyRequestsCount != 0)
+            JoiningRequestsCount = $"+{lobbyRequestsCount}";
+    }
+
+    protected void ForceRedirect(string url)
+    {
+        NavigationManager.NavigateTo(url, true);
+    }
+}
