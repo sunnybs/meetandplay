@@ -1,0 +1,92 @@
+@page "/Notifications"
+@using MeetAndPlay.Web.Infrastructure.Extensions
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Core.Abstraction.Services
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using CurrieTechnologies.Razor.SweetAlert2
+@using System.Runtime.InteropServices
+
+<h2>Уведомления</h2>
+<div class="my-4">
+    <NotificationNav/>
+</div>
+<div class="my-4 list-group">
+    @foreach (var request in LobbyJoiningRequests)
+    {
+        <div class="list-group-item p-4 border-0 shadow-sm my-2">
+            @if (request.RequestInitiator == RequestInitiator.Lobby)
+            {
+                <p>
+                    <b>Вас приглашают поиграть!</b>
+                </p>
+                <p>Подробнее: <a href="/Lobby/@request.Lobby.Id">@(request.Lobby.Title ?? request.Lobby.BuildTitle())</a></p>
+            }
+            else
+            {
+                <p>
+                    <b>К вам в <a href="/Lobby/@request.Lobby.Id">игру</a> стучится новый игрок!</b>
+                </p>
+                <p>Игрок: <a href="/Profile/@request.User.UserName">@request.User.UserName</a></p>
+            }
+            
+            @if (!request.InitialMessage.IsNullOrWhiteSpace())
+            {
+                <p>@request.InitialMessage</p>
+            }
+
+            @if (request.RequestStatus == RequestStatus.Initial)
+            {
+                <div class="d-flex justify-content-around">
+                    <button class="btn btn-warning bg-lightyellow border-0" type="button" @onclick=@(() => UpdateJoiningRequestAsync(request.LobbyId, request.UserId, RequestStatus.Accepted))>Принять</button>
+                    <button class="btn btn-secondary border-0" type="button" @onclick=@(() => UpdateJoiningRequestAsync(request.LobbyId, request.UserId, RequestStatus.Rejected))>Отклонить</button>
+                </div>
+            }
+            else if (request.RequestStatus == RequestStatus.Accepted)
+            {
+                <span style="color: green">
+                    <b>Принято!</b>
+                </span>
+            }
+            else if (request.RequestStatus == RequestStatus.Rejected)
+            {
+                <span style="color: red">
+                    <b>Отклонено :(</b>
+                </span>
+            }
+        </div>
+    }
+</div>
+
+
+@code {
+    public List<LobbyJoiningRequest> LobbyJoiningRequests { get; set; } = new();
+
+    [Inject]
+    protected ILobbyService LobbyService { get; set; }
+
+    [Inject]
+    protected IUserService UserService { get; set; }
+    
+    [Inject]
+    protected SweetAlertService Swal { get; set; }
+    
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; }
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+        LobbyJoiningRequests.AddRange(await LobbyService.GetUserJoiningRequestsAsync(currentUserId, RequestInitiator.Lobby));
+        LobbyJoiningRequests.AddRange(await LobbyService.GetUserLobbiesJoiningRequestsAsync(currentUserId, RequestInitiator.User));
+    }
+
+    protected async Task UpdateJoiningRequestAsync(Guid lobbyId, Guid userId, RequestStatus requestStatus)
+    {
+        await LobbyService.UpdateJoiningRequestStatus(lobbyId, userId, requestStatus);
+        await Swal.FireAsync("Статус обновлен!", null, SweetAlertIcon.Success);
+        NavigationManager.NavigateTo("/Notifications", true);
+    }
+
+}

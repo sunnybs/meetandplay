@@ -130,6 +130,8 @@ namespace MeetAndPlay.Core.Services
                 .LobbyJoiningRequests
                 .Include(r => r.User)
                 .Include(r => r.Lobby)
+                .ThenInclude(l => l.LobbyGames)
+                .ThenInclude(lg => lg.Game)
                 .Where(r => r.UserId == userId && r.RequestInitiator == requestInitiator)
                 .AsNoTracking()
                 .ToArrayAsync();
@@ -143,6 +145,8 @@ namespace MeetAndPlay.Core.Services
                 .LobbyJoiningRequests
                 .Include(r => r.User)
                 .Include(r => r.Lobby)
+                .ThenInclude(l => l.LobbyGames)
+                .ThenInclude(lg => lg.Game)
                 .Where(r => r.Lobby.LobbyPlayers
                     .Any(p => p.PlayerId == userId && p.IsCreator) && r.RequestInitiator == requestInitiator)
                 .AsNoTracking()
@@ -174,7 +178,7 @@ namespace MeetAndPlay.Core.Services
         {
             await using var mnpContext = _contextFactory.Create();
             
-            var request = await mnpContext.LobbyJoiningRequests.FindAsync(new {userId, lobbyId});
+            var request = await mnpContext.LobbyJoiningRequests.FindAsync(userId, lobbyId);
             await EnsureCurrentUserCanChangeRequestStatusAsync(request);
             request.RequestStatus = requestStatus;
             if (requestStatus == RequestStatus.Accepted

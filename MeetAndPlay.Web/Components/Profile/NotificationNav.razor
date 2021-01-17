@@ -5,11 +5,11 @@
         <b>Профиль</b>
     </button>
     
-    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Notifications"))>
         <b>Вас пригласили <span style="color: green">@InvitesCount</span></b>
     </button>
     
-    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Notifications"))>
         <b>К вам постучались <span style="color: green">@JoiningRequestsCount</span></b>
     </button>
     
