@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MeetAndPlay.Data.Models.Chat;
 using MeetAndPlay.Data.Models.Files;
 using MeetAndPlay.Data.Models.Games;
 using MeetAndPlay.Data.Models.Offers;
@@ -40,6 +41,11 @@ namespace MeetAndPlay.Core.Infrastructure
         public DbSet<UserGame> UserGames { get; set; }
         public DbSet<UserImage> UserImages { get; set; }
         public DbSet<UserSocialNetwork> UserSocialNetworks { get; set; }
+        
+        public DbSet<Chat> Chats { get; set; }
+        public DbSet<ChatUser> ChatUsers { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageReceivers> MessageReceivers { get; set; }
          
         public MNPContext(DbContextOptions<MNPContext> options) : base(options) { }
 
@@ -85,6 +91,12 @@ namespace MeetAndPlay.Core.Infrastructure
             
             modelBuilder.Entity<UserRole>()
                 .HasKey(key => new {key.UserId, key.RoleId});
+            
+            modelBuilder.Entity<MessageReceivers>()
+                .HasKey(key => new {key.UserId, key.MessageId});
+            
+            modelBuilder.Entity<ChatUser>()
+                .HasKey(key => new {key.UserId, key.ChatId});
 
             modelBuilder.Entity<File>().HasIndex(f => f.Hash).IsUnique();
         }

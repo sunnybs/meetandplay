@@ -1,0 +1,119 @@
+@page "/Messages"
+@using Microsoft.AspNetCore.SignalR.Client
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.DTO.Chat
+@using MeetAndPlay.Data.Models.Chat
+@using MeetAndPlay.Data.Models.Users
+@using MeetAndPlay.Core.Abstraction.Services
+@using CurrieTechnologies.Razor.SweetAlert2
+@using MeetAndPlay.Web.Hubs
+<h2><i class="far fa-comments"></i> Сообщения</h2>
+
+<div class="row mt-4">
+    <div class="col-md-3 list-group list-group-flush">
+        @foreach (var chat in UserChats)
+        {
+            <button @onclick=@(() => ConnectToChatAsync(chat.Id)) type="button" class="list-group-item list-group-item-action">@chat.Name</button>
+        }
+    </div>
+    <div class="col-md" style="height: 640px; overflow: auto;">
+        @if (IsChatting)
+        {
+            foreach (var message in ChatMessages)
+            {
+                <div class="@(CurrentUser.Id == message.Author.Id ? "send" : "received")">
+                    <div class="user">@message.Author.UserName</div>
+                    <div class="msg">@message.Text</div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="lead small">Выберите чат...</p>
+        }
+    </div>
+</div>
+
+@if (IsChatting)
+{
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md">
+            <textarea class="input-lg" placeholder="Введите сообщение..." @bind="@NewMessage"></textarea>
+            <button class="btn btn-warning bg-lightyellow border-0" @onclick="@SendAsync">Отправить</button>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Inject]
+    IChatService ChatService { get; set; }
+
+    [Inject]
+    IUserService UserService { get; set; }
+
+    [Inject]
+    NavigationManager NavigationManager { get; set; }
+
+    [Inject]
+    SweetAlertService Swal { get; set; }
+
+    protected Chat[] UserChats { get; set; } = {};
+    protected MessageDto[] ChatMessages { get; set; } = {};
+
+    protected bool IsChatting;
+    protected string NewMessage { get; set; }
+    protected User CurrentUser { get; set; }
+
+    protected Guid? ActiveChatId { get; set; }
+
+    private HubConnection _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUser = await UserService.GetCurrentUserAsync();
+        var hubUrl = NavigationManager.BaseUri.TrimEnd('/') + ChatHub.HubUrl;
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(hubUrl)
+            .Build();
+
+        _hubConnection.On<Guid>("UpdateChat", UpdateMessagesAsync);
+    }
+
+    protected async Task ConnectToChatAsync(Guid chatId)
+    {
+        if (ActiveChatId.HasValue)
+        {
+            await _hubConnection.InvokeAsync("LeaveChatAsync", ActiveChatId.Value, CurrentUser.UserName);
+        }
+        ActiveChatId = chatId;
+        await _hubConnection.InvokeAsync("EnterChatAsync", chatId, CurrentUser.UserName);
+        IsChatting = true;
+        ChatMessages = await ChatService.GetMessagesAsync(chatId, CurrentUser.Id);
+        StateHasChanged();
+    }
+
+    protected async Task UpdateMessagesAsync(Guid chatId)
+    {
+        ChatMessages = await ChatService.GetMessagesAsync(chatId, CurrentUser.Id);
+        StateHasChanged();
+    }
+
+    protected async Task SendAsync()
+    {
+        if (!ActiveChatId.HasValue)
+        {
+            await Swal.FireAsync("Вы не подключены ни к чату");
+            return;
+        }
+        if (NewMessage.IsNullOrWhiteSpace())
+        {
+            await Swal.FireAsync("Введите текст сообщения");
+            return;
+        }
+        await ChatService.AddMessageToChatAsync(ActiveChatId.Value, NewMessage);
+        await _hubConnection.InvokeAsync("UpdateChatAsync", ActiveChatId.Value);
+    }
+
+}

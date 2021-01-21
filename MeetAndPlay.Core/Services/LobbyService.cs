@@ -18,11 +18,13 @@ namespace MeetAndPlay.Core.Services
     {
         private readonly IUserService _userService;
         private readonly DbContextFactory _contextFactory;
+        private readonly IChatService _chatService;
 
-        public LobbyService(IUserService userService, DbContextFactory contextFactory)
+        public LobbyService(IUserService userService, DbContextFactory contextFactory, IChatService chatService)
         {
             _userService = userService;
             _contextFactory = contextFactory;
+            _chatService = chatService;
         }
 
         public async Task<Lobby> GetLobbyByIdAsync(Guid id)
@@ -56,7 +58,10 @@ namespace MeetAndPlay.Core.Services
             lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
 
             await mnpContext.AddAsync(lobby);
+            
+            
             await mnpContext.SaveChangesAsync();
+            
             return lobby.Id;
         }
 

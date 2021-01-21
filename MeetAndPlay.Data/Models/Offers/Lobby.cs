@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using MeetAndPlay.Data.Enums;
 
 namespace MeetAndPlay.Data.Models.Offers
@@ -19,6 +20,9 @@ namespace MeetAndPlay.Data.Models.Offers
         
         public PlaceType PlaceType { get; set; }
         public GameLevel GameLevel { get; set; }
+
+        public Guid? ChatId { get; set; }
+        public Chat.Chat Chat { get; set; }
         
         public List<LobbyGame> LobbyGames { get; set; }
         public List<LobbyImage> LobbyImages { get; set; }

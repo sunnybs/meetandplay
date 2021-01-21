@@ -11,6 +11,7 @@ using MeetAndPlay.Core.Infrastructure;
 using MeetAndPlay.Core.Services;
 using MeetAndPlay.Core.Services.FilesService;
 using MeetAndPlay.Core.Services.GamesService;
+using MeetAndPlay.Web.Hubs;
 using MeetAndPlay.Web.Infrastructure;
 using MeetAndPlay.Web.Mapper;
 using MeetAndPlay.Web.Middlewares;
@@ -103,6 +104,8 @@ namespace MeetAndPlay.Web
             services.AddScoped<IOfferAggregator, OfferAggregator>();
             
             services.AddScoped<FileViewModelsService>();
+
+            services.AddScoped<IChatService, ChatService>();
             
             services.AddServerSideBlazor();
             services.AddScoped<JSHelper>();
@@ -147,6 +150,7 @@ namespace MeetAndPlay.Web
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapHub<ChatHub>(ChatHub.HubUrl);
             });
         }
     }
