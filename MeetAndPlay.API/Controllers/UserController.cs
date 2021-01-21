@@ -1,7 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Data.Enums;
+using MeetAndPlay.Data.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetAndPlay.API.Controllers
@@ -11,41 +13,17 @@ namespace MeetAndPlay.API.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        public UserController()
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
-            
+            _userService = userService;
         }
 
-        [HttpGet]
-        public async Task<User> Get()
+        [HttpGet("{login}")]
+        public async Task<User> Get([FromRoute] string login)
         {
-            return new User
-            {
-                FirstName = "Тест",
-                LastName = "Тест",
-                AboutUser = "Тест"
-            };
+            return await _userService.GetUserByLoginAsync(login);
         }
-    }
-    
-    public class User
-    {
-        //public ImageSource UserAvatar { get; set; } 
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public Gender Gender { get; set; }
-        public DateTime BirthDate { get; set; }
-        public string AboutUser { get; set; }
-
-
-    
-        public string FreeTime { get; set; }
-        public string UserGames { get; set; }
-        public string AboutUserGamesInterests { get; set; }
-
-        
-        public string UserSocialNetworks { get; set; }
-        public string UserEmail { get; set; }
-        //public ObservableCollection<RequestViewModel> UserRequests { get; set; }
     }
 }

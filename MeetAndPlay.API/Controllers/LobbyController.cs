@@ -26,6 +26,7 @@ namespace MeetAndPlay.API.Controllers
             _mapper = mapper;
         }
 
+        //Тест
         [HttpPost]
         public async Task<Guid> AddAsync(MobileLobbyAdd addModel)
         {

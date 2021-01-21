@@ -65,6 +65,15 @@ namespace IdentityServerHost.Quickstart.UI
             return View(vm);
         }
 
+        //Тест
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoginMobile(LoginInputModel model)
+        {
+            var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
+            return Json(result.Succeeded);
+        }
+        
         /// <summary>
         /// Handle postback from username/password login
         /// </summary>
