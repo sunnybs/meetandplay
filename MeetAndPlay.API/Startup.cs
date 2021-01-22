@@ -39,7 +39,8 @@ namespace MeetAndPlay.API
             services.AddScoped<IPictureRandomizer, PictureRandomizer>();
 
             services.AddScoped<IPlaceService, PlaceService>();
-            services.AddScoped<IUserAuthenticationService, CookieUserAuthenticationService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserAuthenticationService, MockAuthenticationService>();
 
             services.AddSingleton<DbContextFactory>();
             
