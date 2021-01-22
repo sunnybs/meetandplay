@@ -172,6 +172,23 @@ namespace MeetAndPlay.Core.Services
             message.IsViewed = true;
             await mnpContext.SaveChangesAsync();
         }
+        
+        public async Task SetMessagesViewedAsync(Guid chatId, Guid userId)
+        {
+            await using var mnpContext = _contextFactory.Create();
+            var notViewedMessages = await mnpContext.MessageReceivers
+                .Where(r => !r.IsViewed && r.UserId == userId && r.Message.ChatId == chatId).ToArrayAsync();
+
+            foreach (var notViewedMessage in notViewedMessages)
+            {
+                notViewedMessage.IsViewed = true;
+            }
+
+            if (notViewedMessages.Any())
+            {
+                await mnpContext.SaveChangesAsync();
+            }
+        }
 
         public async Task<Chat[]> GetUserChatsAsync(Guid userId)
         {
@@ -183,6 +200,18 @@ namespace MeetAndPlay.Core.Services
                 .ToArrayAsync();
         }
 
+        public async Task<int> GetNotViewedMessagesCountAsync(Guid userId)
+        {
+            await using var mnpContext = _contextFactory.Create();
+            return await mnpContext.MessageReceivers.CountAsync(r => r.UserId == userId && !r.IsViewed);
+        }
+        
+        public async Task<int> GetNotViewedMessagesCountAsync(Guid userId, Guid chatId)
+        {
+            await using var mnpContext = _contextFactory.Create();
+            return await mnpContext.MessageReceivers.CountAsync(r => r.UserId == userId && r.Message.ChatId == chatId && !r.IsViewed);
+        }
+        
         public async Task<string> GetChatTitleForCurrentUserAsync(Guid chatId)
         {
             await using var mnpContext = _contextFactory.Create();

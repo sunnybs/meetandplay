@@ -17,7 +17,10 @@ namespace MeetAndPlay.Core.Abstraction.Services
         Task<Guid> AddMessageToChatAsync(Guid chatId, string messageText);
         Task<MessageDto[]> GetMessagesAsync(Guid chatId, Guid userId);
         Task SetMessageViewedAsync(Guid messageId, Guid userId);
+        Task SetMessagesViewedAsync(Guid chatId, Guid userId);
         Task<Chat[]> GetUserChatsAsync(Guid userId);
+        Task<int> GetNotViewedMessagesCountAsync(Guid userId);
+        Task<int> GetNotViewedMessagesCountAsync(Guid userId, Guid chatId);
         Task<string> GetChatTitleForCurrentUserAsync(Guid chatId);
     }
 }

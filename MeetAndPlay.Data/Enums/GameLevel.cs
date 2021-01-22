@@ -10,7 +10,7 @@ namespace MeetAndPlay.Data.Enums
         Noob,
         [Description("Понимаю как играть, знаю правила")]
         Middle,
-        [Description("Подержи моё пиво, сынок")]
+        [Description("Профессионал")]
         Pro
     }
 }

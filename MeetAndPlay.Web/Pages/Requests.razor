@@ -1,0 +1,76 @@
+@page "/Requests"
+@using MeetAndPlay.Core.Infrastructure.Extensions
+@using MeetAndPlay.Data.Enums
+@using MeetAndPlay.Data.Models.Offers
+@using MeetAndPlay.Core.Abstraction.Services
+@attribute [Authorize]
+
+<h2>Уведомления</h2>
+<div class="my-4">
+    <NotificationNav/>
+</div>
+<div class="my-4 list-group">
+    @foreach (var request in LobbyJoiningRequests)
+    {
+        <div class="list-group-item p-4 border-0 shadow-sm my-2">
+            @if (request.RequestInitiator == RequestInitiator.Lobby)
+            {
+                <p>
+                    <b>Вы позвали игрока к себе в игру</b>
+                </p>
+                <p>Игрок: <a href="/Profile/@request.User.UserName">@request.User.UserName</a></p>
+            }
+            else
+            {
+                <p>
+                    <b>Вы постучались в игру...</b>
+                </p>
+                <p>Подробнее: <a href="/Lobby/@request.Lobby.Id">@(request.Lobby.Title ?? request.Lobby.BuildTitle())</a></p>
+            }
+
+            @if (!request.InitialMessage.IsNullOrWhiteSpace())
+            {
+                <b>Ваше сообщение:</b> <p>@request.InitialMessage</p>
+            }
+
+            @if (request.RequestStatus == RequestStatus.Initial)
+            {
+                <span style="color: orange">
+                    <b>Вашу заявку пока рассматривают...</b>
+                </span>
+            }
+            else if (request.RequestStatus == RequestStatus.Accepted)
+            {
+                <span style="color: green">
+                    <b>Принято!</b>
+                    <p>Вы можете обсудить встречу в <a href="/Messages">ваших сообщениях</a></p>
+                </span>
+            }
+            else if (request.RequestStatus == RequestStatus.Rejected)
+            {
+                <span style="color: red">
+                    <b>Отклонено :(</b>
+                </span>
+            }
+        </div>
+    }
+</div>
+
+
+@code {
+    public List<LobbyJoiningRequest> LobbyJoiningRequests { get; set; } = new();
+
+    [Inject]
+    protected ILobbyService LobbyService { get; set; }
+
+    [Inject]
+    protected IUserService UserService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+        LobbyJoiningRequests.AddRange(await LobbyService.GetUserJoiningRequestsAsync(currentUserId, RequestInitiator.User));
+        LobbyJoiningRequests.AddRange(await LobbyService.GetUserLobbiesJoiningRequestsAsync(currentUserId, RequestInitiator.Lobby));
+    }
+
+}

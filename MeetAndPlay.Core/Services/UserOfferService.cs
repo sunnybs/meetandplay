@@ -214,7 +214,7 @@ namespace MeetAndPlay.Core.Services
                 .Select(l => new AggregatedOfferDto(
                     l.Id,
                     OfferType.Personal,
-                    "Хочу поиграть",
+                    l.Author.UserName,
                     l.Description,
                     l.Author.UserImages.FirstOrDefault(i => i.IsCurrentAvatar).File.FileLink,
                     null,

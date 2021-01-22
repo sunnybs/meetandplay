@@ -13,9 +13,13 @@
         <b>К вам постучались <span style="color: green">@JoiningRequestsCount</span></b>
     </button>
     
-    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Profile"))>
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Requests"))>
         <b>Ваши действия</b>
     </button>
+    
+    <button class="btn btn-outline-secondary border-0 mx-3 mt-2 text-center" @onclick=@(() => ForceRedirect($"/Messages"))>
+            <b>Сообщения <span style="color: green">@NewMessagesCount</span></b>
+        </button>
 </div>
 
 
@@ -23,9 +27,11 @@
     [Inject] protected NavigationManager NavigationManager { get; set; }
     [Inject] protected ILobbyService LobbyService { get; set; }
     [Inject] protected IUserService UserService { get; set; }
+    [Inject] protected IChatService ChatService { get; set; }
     
     protected string InvitesCount { get; set; }
     protected string JoiningRequestsCount { get; set; }
+    protected string NewMessagesCount { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,6 +45,10 @@
         var lobbyRequestsCount = lobbyRequests.Count(i => i.RequestStatus == RequestStatus.Initial);
         if (lobbyRequestsCount != 0)
             JoiningRequestsCount = $"+{lobbyRequestsCount}";
+
+        var notViewedMessagesCount = await ChatService.GetNotViewedMessagesCountAsync(currentUserId);
+        if (notViewedMessagesCount != 0)
+            NewMessagesCount = $"+{notViewedMessagesCount}";
     }
 
     protected void ForceRedirect(string url)

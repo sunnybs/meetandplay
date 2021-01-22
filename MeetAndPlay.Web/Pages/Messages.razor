@@ -19,7 +19,7 @@
     <div class="col-md-3 list-group list-group-flush">
         @foreach (var chat in UserChats)
         {
-            <button @onclick=@(() => ConnectToChatAsync(chat.Id)) type="button" class="list-group-item list-group-item-action">@ChatNames[chat.Id]</button>
+            <button @onclick=@(() => ConnectToChatAsync(chat.Id)) type="button" class="list-group-item list-group-item-action">@ChatNames[chat.Id] <span style="color: green">@ChatNewMessages[chat.Id]</span></button>
         }
     </div>
     <div @ref="@ChatScreen" class="col-md border rounded p-4" style="height: 640px; overflow: auto;">
@@ -86,6 +86,8 @@
     protected Guid? ActiveChatId { get; set; }
 
     protected Dictionary<Guid, string> ChatNames { get; set; } = new();
+    protected Dictionary<Guid, string> ChatNewMessages { get; set; } = new();
+    
     protected ElementReference ChatScreen;
 
     private HubConnection _hubConnection;
@@ -105,6 +107,13 @@
         foreach (var userChat in UserChats)
         {
             ChatNames.Add(userChat.Id, await ChatService.GetChatTitleForCurrentUserAsync(userChat.Id));
+            var newMessagesCount = await ChatService.GetNotViewedMessagesCountAsync(CurrentUser.Id, userChat.Id);
+            var countResult = "";
+            if (newMessagesCount != 0)
+            {
+                countResult = $"+{newMessagesCount.ToString()}";
+            }
+            ChatNewMessages.Add(userChat.Id, countResult);
         }
     }
 
@@ -118,6 +127,8 @@
         await _hubConnection.InvokeAsync("EnterChatAsync", chatId, CurrentUser.UserName);
         IsChatting = true;
         ChatMessages = await ChatService.GetMessagesAsync(chatId, CurrentUser.Id);
+        await ChatService.SetMessagesViewedAsync(chatId, CurrentUser.Id);
+        ChatNewMessages[chatId] = "";
         StateHasChanged();
     }
 
