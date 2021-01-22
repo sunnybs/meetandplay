@@ -6,6 +6,7 @@
 @using MeetAndPlay.Data.Enums
 @using CurrieTechnologies.Razor.SweetAlert2
 @using System.Runtime.InteropServices
+@attribute [Authorize]
 
 <h2>Уведомления</h2>
 <div class="my-4">
@@ -46,6 +47,7 @@
             {
                 <span style="color: green">
                     <b>Принято!</b>
+                    <p>Вы можете обсудить встречу в <a href="/Messages">ваших сообщениях</a></p>
                 </span>
             }
             else if (request.RequestStatus == RequestStatus.Rejected)

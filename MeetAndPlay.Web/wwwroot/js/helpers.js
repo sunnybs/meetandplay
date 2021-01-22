@@ -26,3 +26,7 @@ function toggleClass(element, className) {
 function containsClass(element, className) {
     return element.classList.contains(className);
 }
+
+function scrollToBotton(element){
+    $(element).scrollTop($(element)[0].scrollHeight);
+}

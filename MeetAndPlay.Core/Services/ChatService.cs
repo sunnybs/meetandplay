@@ -23,6 +23,33 @@ namespace MeetAndPlay.Core.Services
             _userService = userService;
         }
 
+        public async Task<Guid> CreateChatWithUserAsync(Guid userId)
+        {
+            await using var mnpContext = _contextFactory.Create();
+            var currentUserId = await _userService.GetCurrentUserIdAsync();
+            var alreadyCreatedChat = await mnpContext.Chats
+                .FirstOrDefaultAsync(c => c.IsPersonalChat
+                                          && c.ChatUsers.Select(c => c.UserId).Contains(currentUserId)
+                                          && c.ChatUsers.Select(c => c.UserId).Contains(userId));
+            if (alreadyCreatedChat != null)
+                return alreadyCreatedChat.Id;
+
+            var chat = new Chat
+            {
+                Name = "Переписка",
+                CreationDate = DateTime.Now,
+                IsPersonalChat = true,
+                ChatUsers = new List<ChatUser>
+                {
+                    new() {UserId = currentUserId, IsCreator = true}, new() {UserId = userId, IsCreator = false}
+                }
+            };
+
+            await mnpContext.AddAsync(chat);
+            await mnpContext.SaveChangesAsync();
+            return chat.Id;
+        }
+        
         public async Task<Guid> CreateChatAsync(string title, bool isPersonalChat)
         {
             var chat = new Chat
@@ -34,11 +61,20 @@ namespace MeetAndPlay.Core.Services
             var currentUserId = await _userService.GetCurrentUserIdAsync();
             chat.ChatUsers = new List<ChatUser>
             {
-                new() {UserId = currentUserId}
+                new() {UserId = currentUserId, IsCreator = true}
             };
 
             await using var mnpContext = _contextFactory.Create();
             await mnpContext.AddAsync(chat);
+            await mnpContext.SaveChangesAsync();
+            return chat.Id;
+        }
+
+        public async Task<Guid> UpdateChatTitleAsync(Guid chatId, string title)
+        {
+            await using var mnpContext = _contextFactory.Create();
+            var chat = await mnpContext.Chats.FindAsync(chatId);
+            chat.Name = title;
             await mnpContext.SaveChangesAsync();
             return chat.Id;
         }

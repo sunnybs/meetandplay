@@ -56,10 +56,13 @@ namespace MeetAndPlay.Core.Services
 
             var currentUserId = await _userService.GetCurrentUserIdAsync();
             lobby.LobbyPlayers = new List<LobbyPlayer> {new() {PlayerId = currentUserId, IsCreator = true}};
-
             await mnpContext.AddAsync(lobby);
             
-            
+            await mnpContext.SaveChangesAsync();
+
+            var createdLobby = await GetLobbyByIdAsync(lobby.Id);
+            var lobbyChatId = await _chatService.CreateChatAsync(createdLobby.Title ?? createdLobby.BuildTitle(), false);
+            lobby.ChatId = lobbyChatId;
             await mnpContext.SaveChangesAsync();
             
             return lobby.Id;
@@ -83,7 +86,8 @@ namespace MeetAndPlay.Core.Services
             lobby.LobbyGames = null;
             lobby.CreationDate = oldLobby.CreationDate;
             lobby.IsActive = oldLobby.IsActive;
-
+            lobby.ChatId = oldLobby.ChatId;
+            
             mnpContext.Update(lobby);
 
             var oldLobbyGames = mnpContext.LobbyGames
@@ -187,13 +191,24 @@ namespace MeetAndPlay.Core.Services
             await EnsureCurrentUserCanChangeRequestStatusAsync(request);
             request.RequestStatus = requestStatus;
             if (requestStatus == RequestStatus.Accepted
-                && await mnpContext.LobbyPlayers.AnyAsync(lp => lp.LobbyId == lobbyId && lp.PlayerId == userId))
+                && !await mnpContext.LobbyPlayers.AnyAsync(lp => lp.LobbyId == lobbyId && lp.PlayerId == userId))
             {
                 await mnpContext.AddAsync(new LobbyPlayer {LobbyId = lobbyId, PlayerId = userId, IsCreator = false});
-                var lobby = await mnpContext.Lobbies.FindAsync(lobbyId);
+                var lobby = await mnpContext.Lobbies
+                    .Include(l => l.LobbyGames)
+                    .ThenInclude(l => l.Game)
+                    .FindByIdAsync(lobbyId);
+                
                 lobby.CurrentPlayersCount++;
+                await mnpContext.SaveChangesAsync();
+                if (lobby.ChatId.HasValue)
+                {
+                    await _chatService.AddUserToChatAsync(lobby.ChatId.Value, userId);
+                    await _chatService.UpdateChatTitleAsync(lobby.ChatId.Value, lobby.Title ?? lobby.BuildTitle());
+                }
+                    
+                return;
             }
-
             await mnpContext.SaveChangesAsync();
         }
 

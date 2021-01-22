@@ -20,11 +20,13 @@ namespace MeetAndPlay.Core.Services
     {
         private readonly IUserService _userService;
         private readonly DbContextFactory _contextFactory;
+        private readonly IChatService _chatService;
 
-        public UserOfferService(IUserService userService, DbContextFactory contextFactory)
+        public UserOfferService(IUserService userService, DbContextFactory contextFactory, IChatService chatService)
         {
             _userService = userService;
             _contextFactory = contextFactory;
+            _chatService = chatService;
         }
 
         public async Task<UserOffer> GetByIdAsync(Guid id)

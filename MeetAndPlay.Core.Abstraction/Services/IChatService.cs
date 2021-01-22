@@ -9,6 +9,8 @@ namespace MeetAndPlay.Core.Abstraction.Services
     public interface IChatService
     {
         Task<Guid> CreateChatAsync(string title, bool isPersonal);
+        Task<Guid> UpdateChatTitleAsync(Guid chatId, string title);
+        Task<Guid> CreateChatWithUserAsync(Guid userId);
         Task AddUserToChatAsync(Guid chatId, Guid userId);
         Task RemoveUserFromChatAsync(Guid chatId, Guid userId);
         Task<User[]> GetReceiversFromChatAsync(Guid chatId);

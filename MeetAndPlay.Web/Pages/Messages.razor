@@ -7,29 +7,37 @@
 @using MeetAndPlay.Core.Abstraction.Services
 @using CurrieTechnologies.Razor.SweetAlert2
 @using MeetAndPlay.Web.Hubs
+@attribute [Authorize]
+
 <h2><i class="far fa-comments"></i> Сообщения</h2>
 
-<div class="row mt-4">
+<div class="my-4">
+    <NotificationNav/>
+</div>
+
+<div class="row my-4">
     <div class="col-md-3 list-group list-group-flush">
         @foreach (var chat in UserChats)
         {
-            <button @onclick=@(() => ConnectToChatAsync(chat.Id)) type="button" class="list-group-item list-group-item-action">@chat.Name</button>
+            <button @onclick=@(() => ConnectToChatAsync(chat.Id)) type="button" class="list-group-item list-group-item-action">@ChatNames[chat.Id]</button>
         }
     </div>
-    <div class="col-md" style="height: 640px; overflow: auto;">
+    <div @ref="@ChatScreen" class="col-md border rounded p-4" style="height: 640px; overflow: auto;">
         @if (IsChatting)
         {
             foreach (var message in ChatMessages)
             {
-                <div class="@(CurrentUser.Id == message.Author.Id ? "send" : "received")">
-                    <div class="user">@message.Author.UserName</div>
-                    <div class="msg">@message.Text</div>
+                <div class="row d-flex @(CurrentUser.Id == message.Author.Id ? "flex-row-reverse" : "flex-row")" style="overflow-x: hidden">
+                    <div class="@(CurrentUser.Id == message.Author.Id ? "sent" : "received") mx-4">
+                        <div class="user">@message.Author.UserName</div>
+                        <div class="msg">@message.Text</div>
+                    </div>
                 </div>
             }
         }
         else
         {
-            <p class="lead small">Выберите чат...</p>
+            <h2>Выберите чат...</h2>
         }
     </div>
 </div>
@@ -39,8 +47,13 @@
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md">
-            <textarea class="input-lg" placeholder="Введите сообщение..." @bind="@NewMessage"></textarea>
-            <button class="btn btn-warning bg-lightyellow border-0" @onclick="@SendAsync">Отправить</button>
+
+            <div class="form-group">
+                <textarea class="form-control" rows="3" placeholder="Введите сообщение..." @bind="@NewMessage"></textarea>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-warning bg-lightyellow border-0" @onclick="@SendAsync">Отправить</button>
+            </div>
         </div>
     </div>
 }
@@ -59,6 +72,10 @@
     [Inject]
     SweetAlertService Swal { get; set; }
 
+
+    [Inject]
+    IJSRuntime JSRuntime { get; set; }
+
     protected Chat[] UserChats { get; set; } = {};
     protected MessageDto[] ChatMessages { get; set; } = {};
 
@@ -67,6 +84,9 @@
     protected User CurrentUser { get; set; }
 
     protected Guid? ActiveChatId { get; set; }
+
+    protected Dictionary<Guid, string> ChatNames { get; set; } = new();
+    protected ElementReference ChatScreen;
 
     private HubConnection _hubConnection;
 
@@ -79,6 +99,13 @@
             .Build();
 
         _hubConnection.On<Guid>("UpdateChat", UpdateMessagesAsync);
+        await _hubConnection.StartAsync();
+
+        UserChats = await ChatService.GetUserChatsAsync(CurrentUser.Id);
+        foreach (var userChat in UserChats)
+        {
+            ChatNames.Add(userChat.Id, await ChatService.GetChatTitleForCurrentUserAsync(userChat.Id));
+        }
     }
 
     protected async Task ConnectToChatAsync(Guid chatId)
@@ -98,6 +125,7 @@
     {
         ChatMessages = await ChatService.GetMessagesAsync(chatId, CurrentUser.Id);
         StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("scrollToBottom", ChatScreen);
     }
 
     protected async Task SendAsync()
@@ -114,6 +142,8 @@
         }
         await ChatService.AddMessageToChatAsync(ActiveChatId.Value, NewMessage);
         await _hubConnection.InvokeAsync("UpdateChatAsync", ActiveChatId.Value);
+        NewMessage = "";
+        StateHasChanged();
     }
 
 }

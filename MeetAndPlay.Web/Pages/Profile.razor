@@ -26,6 +26,10 @@
         {
             <a class="btn btn-warning bg-lightyellow border-0" href="/Profile/Edit"><i class="fas fa-user-edit"></i> Редактировать профиль</a>
         }
+        else
+        {
+            <button @onclick=@CreateChatAsync type="button" class="btn btn-warning bg-lightyellow border-0"><i class="far fa-comment"></i> Написать</button>
+        }
     </div>
     <div class="col-md">
         <h2>
@@ -157,6 +161,12 @@ else
 
     [Inject]
     protected IApiClient ApiClient { get; set; }
+    
+    [Inject]
+    protected IChatService ChatService { get; set; }
+    
+    [Inject]
+    protected NavigationManager NavigationManager { get; set; }
 
     [Parameter]
     public string UserName { get; set; }
@@ -211,4 +221,10 @@ else
             : await ApiClient.GetRandomPlayerPictureLinkAsync();
     }
 
+    protected async Task CreateChatAsync()
+    {
+        await ChatService.CreateChatWithUserAsync(UserModel.Id);
+        NavigationManager.NavigateTo("/Messages");
+    }
+    
 }

@@ -1,15 +1,6 @@
-textarea {
-    border: 1px dashed #888;
-    border-radius: 5px;
-    width: 80%;
-    overflow: auto;
-    background: #f7f7f7
-}
-
 /* improved for speech bubbles */
 .received, .sent {
     position: relative;
-    font-family: arial;
     font-size: 1.1em;
     border-radius: 10px;
     padding: 20px;
@@ -24,7 +15,7 @@ textarea {
 }
 
 .sent {
-    background: #03a9f4;
+    background: #8ECAE6;
     color: #fff;
     margin-left: 10%;
     top: 50%;
@@ -32,20 +23,19 @@ textarea {
 }
 
 .received {
-    background: #4CAF50;
-    color: #fff;
+    background: #FFDC85;
     margin-left: 10px;
     margin-right: 10%;
 }
 
 .sent:after {
-    border-left-color: #03a9f4;
+    border-left-color: #8ECAE6;
     border-right: 0;
     right: -20px;
 }
 
 .received:after {
-    border-right-color: #4CAF50;
+    border-right-color: #FFDC85;
     border-left: 0;
     left: -20px;
 }
@@ -58,5 +48,6 @@ textarea {
 }
 
 .msg {
+    color: #000;
     /*display: inline;*/
 }

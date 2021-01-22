@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using MeetAndPlay.Core.Infrastructure.Extensions;
 using MeetAndPlay.Core.Infrastructure.Helpers;
 using MeetAndPlay.Data.Models.Offers;
 
-namespace MeetAndPlay.Web.Infrastructure.Extensions
+namespace MeetAndPlay.Core.Infrastructure.Extensions
 {
     public static class LobbyExtensions
     {
@@ -12,7 +11,7 @@ namespace MeetAndPlay.Web.Infrastructure.Extensions
         {
             var titleParts = new List<string>();
             titleParts.Add("Поиск компании");
-            var games = lobby.LobbyGames.Select(lg => lg.Game.Name).JoinAsString(", ");
+            var games = lobby.LobbyGames?.Select(lg => lg.Game.Name).JoinAsString(", ");
             if (!games.IsNullOrWhiteSpace())
                 titleParts.Add(games);
             var requestedPlayersCount = lobby.MaxPlayersCount - lobby.CurrentPlayersCount;
