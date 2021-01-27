@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Data.DTO;
 using MeetAndPlay.Data.DTO.Lobies;
+using MeetAndPlay.Data.DTO.OfferAggregator;
 using MeetAndPlay.Data.DTO.ReadFilters;
 using MeetAndPlay.Data.Models.Games;
 using MeetAndPlay.Data.Models.Offers;
@@ -26,6 +28,18 @@ namespace MeetAndPlay.API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
+        public async Task<CountArray<AggregatedOfferDto>> GetAll()
+        {
+            return await _lobbyService.AggregateOffersAsync(new OffersFilterDto());
+        }
+
+        [HttpGet("{id}")]
+        public async Task<Lobby> GetById(Guid id)
+        {
+            return await _lobbyService.GetLobbyByIdAsync(id);
+        }
+        
         //Тест
         [HttpPost]
         public async Task<Guid> AddAsync(MobileLobbyAdd addModel)

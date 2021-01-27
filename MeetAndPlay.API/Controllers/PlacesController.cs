@@ -1,5 +1,9 @@
+using System;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Data.DTO;
+using MeetAndPlay.Data.DTO.OfferAggregator;
+using MeetAndPlay.Data.Models.Offers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetAndPlay.API.Controllers
@@ -19,6 +23,12 @@ namespace MeetAndPlay.API.Controllers
         public async Task ExecuteSeeding()
         {
             await _placeService.ExecuteSeeding();
+        }
+        
+        [HttpGet]
+        public async Task<CountArray<AggregatedOfferDto>> GetAll()
+        {
+            return await _placeService.AggregateOffersAsync(new OffersFilterDto());
         }
     }
 }

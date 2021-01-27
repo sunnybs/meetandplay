@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using MeetAndPlay.API.Mapper;
 using MeetAndPlay.Core.Abstraction.Services;
 using MeetAndPlay.Core.Abstraction.Services.FileService;
 using MeetAndPlay.Core.Infrastructure;
@@ -34,16 +36,21 @@ namespace MeetAndPlay.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MNPContext>(ConfigureDbContext);
+            services.AddScoped<ILobbyService, LobbyService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGamesService, GamesService>();
             services.AddScoped<IFilesService, FilesService>();
-            services.AddScoped<IPictureRandomizer, PictureRandomizer>();
-
+            services.AddScoped<IUserOfferService, UserOfferService>();
             services.AddScoped<IPlaceService, PlaceService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IOfferAggregator, OfferAggregator>();
+            services.AddScoped<IPictureRandomizer, PictureRandomizer>();
+            services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IUserAuthenticationService, MockAuthenticationService>();
 
             services.AddSingleton<DbContextFactory>();
             
+            services.AddAutoMapper(typeof(MockProfile));
+
             services.AddHttpContextAccessor();
             
             services.AddControllers();

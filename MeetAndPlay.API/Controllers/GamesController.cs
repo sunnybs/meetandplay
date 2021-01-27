@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MeetAndPlay.Core.Abstraction.Services;
+using MeetAndPlay.Data.DTO.ReadFilters;
+using MeetAndPlay.Data.Models.Games;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetAndPlay.API.Controllers
@@ -19,6 +22,12 @@ namespace MeetAndPlay.API.Controllers
         public async Task ExecuteSeeding()
         {
             await _gamesService.SeedGamesAsync();
+        }
+
+        [HttpGet]
+        public async Task<IReadOnlyList<Game>> GetAll()
+        {
+            return await _gamesService.GetAsync(new ReadFilter());
         }
     }
 }
