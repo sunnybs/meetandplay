@@ -68,7 +68,7 @@ namespace IdentityServerHost.Quickstart.UI
         //Тест
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LoginMobile(LoginInputModel model)
+        public async Task<IActionResult> LoginMobile([FromBody] LoginInputModel model)
         {
             var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
             return Json(result.Succeeded);
